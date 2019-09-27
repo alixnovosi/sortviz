@@ -1,4 +1,5 @@
 import { SortData, SortStepper } from "./sortstepper";
+import { Sort } from "./sorts";
 
 import "./styles/main.scss";
 
@@ -17,6 +18,7 @@ class App {
     private highlightColor: string = "#EFEFFF";
 
     public sort_stepper: SortStepper;
+    public sort: Sort;
 
     constructor() {
         this.base = <HTMLElement>document.getElementById("app");
@@ -36,12 +38,14 @@ class App {
                 ctx: this.ctx,
             },
         );
+
+        this.sort = new Sort(Sort.QUICKSORT, this.sort_stepper);
     }
 
     private gameLoop(): void {
         this.render();
 
-        setTimeout(this.bindRequestAnimationFrame(), 500);
+        setTimeout(this.bindRequestAnimationFrame(), 1);
     }
 
     private bindRequestAnimationFrame(): () => void {
@@ -51,11 +55,10 @@ class App {
     }
 
     public setup(): void {
-        this.initCanvas();
-        this.gameLoop();
-    }
+        this.sort.run();
+        this.sort_stepper.reset_items();
 
-    private initCanvas(): void {
+        this.gameLoop();
     }
 
     private render(): void {

@@ -1,6 +1,7 @@
 const NORMAL_COLOR: string = "#80BFFF";
 const SWAP_COLOR: string = "#DE2C2C";
 const INDEX_COLOR: string = "#24782E";
+const COMPARE_COLOR: string = "#143A42";
 
 export class SortData {
     public ctx: CanvasRenderingContext2D;
@@ -24,9 +25,10 @@ class Bar {
 export class SortStepper {
     public data: SortData;
 
-    private lambda_q: (() => void)[] = [];
+    public lambda_q: (() => void)[] = [];
 
     public items: Bar[] = [];
+    public untouched_items: Bar[] = [];
     public count: number = 120;
 
     private line_color: string = "#0E151C";
@@ -35,22 +37,19 @@ export class SortStepper {
     constructor(data: SortData) {
         this.data = data;
 
+        let high_cap = Math.floor(this.data.height * 0.90);
+        let low_cap = Math.floor(this.data.height * 0.10);
+
         for (let i = 0; i < this.count; i++) {
+            let value = Math.floor(Math.random() * (high_cap-low_cap) + low_cap);
             this.items.push(
-                new Bar(Math.floor(Math.random() * this.data.height), this.fill_color),
+                new Bar(value, this.fill_color),
             );
-        }
 
-        for (let i = 0; i < 10; i++) {
-            let first = Math.floor(Math.random() * this.items.length);
-            let second = Math.floor(Math.random() * this.items.length);
-
-            this.swap(first, second);
-        }
-        for (let i = 0; i < 10; i++) {
-            let first = Math.floor(Math.random() * this.items.length);
-
-            this.access(first);
+            // store a copy of every item, so we can play actions back later.
+            this.untouched_items.push(
+                new Bar(value, this.fill_color),
+            );
         }
     }
 
@@ -75,8 +74,40 @@ export class SortStepper {
         }
     }
 
+    // compare elements.
+    // return 1 if first > second
+    //        0 if first == second
+    //        -1 if first < second
+    public compare(first: number, second: number): number {
+        this.lambda_q.push(
+            () => {
+                this.items[first].color = COMPARE_COLOR;
+                this.items[second].color = COMPARE_COLOR;
+            }
+        );
+        this.lambda_q.push(
+            () => {
+                this.items[second].color = NORMAL_COLOR;
+                this.items[first].color = NORMAL_COLOR;
+            }
+        );
+
+        let first_val = this.items[first].value;
+        let second_val = this.items[second].value;
+        let res = 0
+        if (first_val == second_val) {
+            res = 0
+        } else if (first_val > second_val) {
+            res = 1
+        } else {
+            res = -1;
+        }
+
+        return res;
+    }
+
     // access element and show this happened.
-    public async access(index: number): Promise<void> {
+    public access(index: number): number {
         if (index < 0 || index >= this.items.length) {
             return;
         }
@@ -91,10 +122,12 @@ export class SortStepper {
                 this.items[index].color = NORMAL_COLOR;
             }
         );
+
+        return this.items[index].value;
     }
 
     // swap two elements with a color change.
-    public async swap(first: number, second: number): Promise<void> {
+    public swap(first: number, second: number): void {
         if (first < 0 || first >= this.items.length ||
                 second < 0 || second >= this.items.length) {
             return;
@@ -123,8 +156,15 @@ export class SortStepper {
             }
         );
 
-        while (this.lambda_q.length > 0) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+        [this.items[first], this.items[second]] = [this.items[second], this.items[first]];
+    }
+
+    public reset_items() {
+        this.items = [];
+        for (let item of this.untouched_items) {
+            this.items.push(
+                new Bar(item.value, item.color)
+            );
         }
     }
 }
