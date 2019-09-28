@@ -75,9 +75,9 @@ export class SortStepper {
     }
 
     // compare elements.
-    // return 1 if first > second
+    // return pos if first > second
     //        0 if first == second
-    //        -1 if first < second
+    //        neg if first < second
     public compare(first: number, second: number): number {
         this.lambda_q.push(
             () => {
@@ -87,31 +87,20 @@ export class SortStepper {
         );
         this.lambda_q.push(
             () => {
-                this.items[second].color = NORMAL_COLOR;
                 this.items[first].color = NORMAL_COLOR;
+                this.items[second].color = NORMAL_COLOR;
             }
         );
 
+        return this.items[first].value - this.items[second].value;
         let first_val = this.items[first].value;
         let second_val = this.items[second].value;
-        let res = 0
-        if (first_val == second_val) {
-            res = 0
-        } else if (first_val > second_val) {
-            res = 1
-        } else {
-            res = -1;
-        }
-
-        return res;
+        console.log(`first ${first_val} second ${second_val}`);
+        return first_val - second_val;
     }
 
     // access element and show this happened.
     public access(index: number): number {
-        if (index < 0 || index >= this.items.length) {
-            return;
-        }
-
         this.lambda_q.push(
             () => {
                 this.items[index].color = INDEX_COLOR;

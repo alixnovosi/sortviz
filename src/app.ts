@@ -39,13 +39,13 @@ class App {
             },
         );
 
-        this.sort = new Sort(Sort.QUICKSORT, this.sort_stepper);
+        this.sort = new Sort(Sort.HEAPSORT, this.sort_stepper);
     }
 
     private gameLoop(): void {
         this.render();
 
-        setTimeout(this.bindRequestAnimationFrame(), 1);
+        setTimeout(this.bindRequestAnimationFrame(), 3);
     }
 
     private bindRequestAnimationFrame(): () => void {
