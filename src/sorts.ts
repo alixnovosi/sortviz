@@ -134,7 +134,7 @@ export class Sort {
 
         let heap = new MaxHeap(this.stepper);
 
-        while (heap.count > 1) {
+        while (heap.count > 0) {
             heap.delete_max();
         }
     }

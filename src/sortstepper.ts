@@ -37,12 +37,18 @@ export class SortStepper {
 
     constructor(data: SortData) {
         this.data = data;
+        let bar_spacing = this.data.height / (this.data.count);
 
-        let high_cap = Math.floor(this.data.height * 0.95);
-        let low_cap = Math.floor(this.data.height * 0.05);
+        let nums = [];
+        let val = bar_spacing;
+        for (let i = 0; i < this.data.count; i++) {
+            nums.push(val);
+            val += bar_spacing;
+        }
 
         for (let i = 0; i < this.data.count; i++) {
-            let value = Math.floor(Math.random() * (high_cap-low_cap) + low_cap);
+            let index: number = Math.floor(Math.random() * nums.length);
+            let value: number = nums.splice(index, 1)[0];
             this.items.push(
                 new Bar(value, this.fill_color),
             );

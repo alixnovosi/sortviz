@@ -13,7 +13,7 @@ class App {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
 
-    private height: number = 900;
+    private height: number = 1200;
     private width: number = 1600;
 
     // store here so we can pass to controls and sortstepper on initialization.

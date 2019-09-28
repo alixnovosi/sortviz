@@ -67,7 +67,7 @@ export class Controls {
         let slider = new Slider(
             itemSliderRow,
             20,
-            150,
+            120,
             this.count,
             this.onItemSliderUpdate(),
         )
