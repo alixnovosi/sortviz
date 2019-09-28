@@ -5,6 +5,7 @@ export class Sort {
     public static readonly HEAPSORT = "HEAPSORT";
     public static readonly STOOGESORT = "STOOGESORT";
     public static readonly SELECTION_SORT = "SELECTION_SORT";
+    public static readonly INSERTION_SORT = "INSERTION_SORT";
 
     public sort_type: string;
 
@@ -15,11 +16,14 @@ export class Sort {
         Sort.HEAPSORT,
         Sort.STOOGESORT,
         Sort.SELECTION_SORT,
+        Sort.INSERTION_SORT,
     ];
 
     // sorts we should give a warning on that they're inefficient.
+    // TODO maybe split into slow and VERY slow?
     public static slow_sorts: string[] = [
         Sort.STOOGESORT,
+        Sort.SELECTION_SORT,
     ];
 
     constructor(sort_type: string, stepper: SortStepper) {
@@ -31,6 +35,8 @@ export class Sort {
         if (Sort.supported_sorts.indexOf(this.sort_type) === -1) {
             return;
         }
+
+        // TODO find a way to do this automatically off the supported sorts list.
         if (this.sort_type == Sort.QUICKSORT) {
             this.quicksort();
         } else if (this.sort_type == Sort.HEAPSORT) {
@@ -39,6 +45,8 @@ export class Sort {
             this.stoogesort();
         } else if (this.sort_type == Sort.SELECTION_SORT) {
             this.selection_sort();
+        } else if (this.sort_type == Sort.INSERTION_SORT) {
+            this.insertion_sort();
         }
     }
 
@@ -177,6 +185,19 @@ export class Sort {
 
             this.stepper.swap(sindex, sorted_cutoff);
             sorted_cutoff += 1;
+        }
+    }
+
+    private insertion_sort() {
+        let i = 1;
+        while (i < this.stepper.data.count) {
+            let j = i;
+            while (j > 0 && this.stepper.compare(j-1, j) > 0) {
+                this.stepper.swap(j, j-1);
+                j -= 1;
+            }
+
+            i += 1
         }
     }
 }
