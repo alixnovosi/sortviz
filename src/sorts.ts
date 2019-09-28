@@ -4,15 +4,17 @@ export class Sort {
     public static readonly QUICKSORT = "QUICKSORT";
     public static readonly HEAPSORT = "HEAPSORT";
     public static readonly STOOGESORT = "STOOGESORT";
+    public static readonly SELECTION_SORT = "SELECTION_SORT";
 
     public sort_type: string;
 
     private stepper: SortStepper;
 
-    private static supported_sorts: string[] = [
+    public static supported_sorts: string[] = [
         Sort.QUICKSORT,
         Sort.HEAPSORT,
         Sort.STOOGESORT,
+        Sort.SELECTION_SORT,
     ];
 
     // sorts we should give a warning on that they're inefficient.
@@ -26,12 +28,17 @@ export class Sort {
     }
 
     public run(): void {
+        if (Sort.supported_sorts.indexOf(this.sort_type) === -1) {
+            return;
+        }
         if (this.sort_type == Sort.QUICKSORT) {
             this.quicksort();
         } else if (this.sort_type == Sort.HEAPSORT) {
             this.heapsort();
         } else if (this.sort_type == Sort.STOOGESORT) {
             this.stoogesort();
+        } else if (this.sort_type == Sort.SELECTION_SORT) {
+            this.selection_sort();
         }
     }
 
@@ -42,7 +49,7 @@ export class Sort {
                 let leader = start;
 
                 while (leader < end) {
-                    if (stepper.compare(leader, end) >= 0) {
+                    if (stepper.compare(leader, end) < 0) {
                         stepper.swap(follower, leader);
                         follower += 1;
                     }
@@ -112,13 +119,12 @@ export class Sort {
                     let second_index: number = (root*2) + 2;
                     if (second_index < this.count-1) {
 
-                        let res = this.stepper.compare(second_index, first_index);
-                        if (res < 0) {
+                        if (this.stepper.compare(second_index, first_index) > 0) {
                             maxdex = second_index;
                         }
                     }
 
-                    if (this.stepper.compare(root, maxdex) > 0) {
+                    if (this.stepper.compare(root, maxdex) < 0) {
                         this.stepper.swap(root, maxdex);
                         root = maxdex;
 
@@ -141,7 +147,7 @@ export class Sort {
 
     private stoogesort(start: number=0, end: number=this.stepper.data.count-1): void {
         // if the first element is greater than the last element, swap them.
-        if (this.stepper.compare(start, end) < 0) {
+        if (this.stepper.compare(start, end) > 0) {
             this.stepper.swap(start, end);
         }
 
@@ -159,6 +165,23 @@ export class Sort {
             this.stoogesort(start, end-div);
             this.stoogesort(start+div, end);
             this.stoogesort(start, end-div);
+        }
+    }
+
+    private selection_sort() {
+        let sorted_cutoff = 0;
+
+        while (sorted_cutoff < this.stepper.data.count) {
+            let sindex = sorted_cutoff;
+
+            for (let i = sindex; i < this.stepper.data.count; i++) {
+                if (this.stepper.compare(sindex, i) > 0) {
+                    sindex = i;
+                }
+            }
+
+            this.stepper.swap(sindex, sorted_cutoff);
+            sorted_cutoff += 1;
         }
     }
 }

@@ -45,11 +45,7 @@ class App {
         this.base.appendChild(div);
         this.controls = new Controls(
             div,
-            [
-                Sort.QUICKSORT,
-                Sort.HEAPSORT,
-                Sort.STOOGESORT,
-            ],
+            Sort.supported_sorts,
             this.count,
             this.delay,
             this.onReload(),

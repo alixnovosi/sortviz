@@ -69,7 +69,7 @@ export class SortStepper {
             this.data.ctx.strokeStyle = this.line_color;
             this.data.ctx.lineWidth = 3;
             this.data.ctx.fillStyle = item.color;
-            this.data.ctx.rect(x_pos, item.value, bar_width, this.data.height-item.value);
+            this.data.ctx.rect(x_pos, this.data.height-item.value, bar_width, item.value);
             this.data.ctx.stroke();
             this.data.ctx.fill();
             x_pos += bar_width;
