@@ -93,31 +93,23 @@ export class Sort {
             }
 
             private heapify() {
-                let start = this.count-1;
+                let start = Math.floor((this.count-1-1) / 2);
                 while (start >= 0) {
-                    this.sift_down(start)
+                    this.sift_down(start, this.count-1)
                     start -= 1;
                 }
             }
 
-            // swap item out of array, update count, sift item at 0 into correct position.
-            public delete_max() {
-                this.stepper.swap(0, this.count-1);
-                this.count -= 1;
-
-                this.sift_down(0);
-            }
-
             // swap item at index into correct heap position.
-            public sift_down(index: number) {
-                let root: number = index;
+            public sift_down(start: number, end: number) {
+                let root = start;
 
-                let first_index: number = (root*2) + 1;
-                while (first_index < this.count-1) {
+                let first_index = (root*2) + 1;
+                while (first_index <= end) {
 
                     let maxdex: number = first_index;
                     let second_index: number = (root*2) + 2;
-                    if (second_index < this.count-1) {
+                    if (second_index <= end) {
 
                         if (this.stepper.compare(second_index, first_index) > 0) {
                             maxdex = second_index;
@@ -128,7 +120,7 @@ export class Sort {
                         this.stepper.swap(root, maxdex);
                         root = maxdex;
 
-                        first_index = Math.floor((root*2) + 1);
+                        first_index = (root*2) + 1;
 
                     // nothing to do.
                     } else {
@@ -140,8 +132,11 @@ export class Sort {
 
         let heap = new MaxHeap(this.stepper);
 
-        while (heap.count > 0) {
-            heap.delete_max();
+        let end = heap.count-1;
+        while (end > 0) {
+            this.stepper.swap(end, 0);
+            end -= 1;
+            heap.sift_down(0, end);
         }
     }
 
