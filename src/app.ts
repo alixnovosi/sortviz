@@ -1,6 +1,7 @@
 import { Controls } from "./controls";
-import { SortData, SortStepper } from "./sortstepper";
+import { Constants } from "./constants";
 import { Sort } from "./sorts";
+import { SortData, SortStepper } from "./sortstepper";
 
 import "./styles/main.scss";
 
@@ -19,6 +20,9 @@ class App {
     // store here so we can pass to controls and sortstepper on initialization.
     private count: number = 100;
     private delay: number = 50;
+
+    // to store whether we need to reset the board/actions.
+    private reset: boolean = true;
 
     private interval_id: any;
 
@@ -45,13 +49,13 @@ class App {
         this.base.appendChild(div);
         this.controls = new Controls(
             div,
-            Sort.supported_sorts,
+            Constants.supported_sorts,
             this.count,
             this.delay,
             this.onReload(),
         )
 
-        this.sort_type = Sort.QUICKSORT;
+        this.sort_type = Constants.QUICKSORT;
     }
 
     private gameLoop(): void {
@@ -64,35 +68,75 @@ class App {
     }
 
     public setup(): void {
-        this.sort_stepper = new SortStepper(
-            {
-                ...new SortData(),
-                width: this.canvas.width,
-                height: this.canvas.height,
-                ctx: this.ctx,
-                count: this.count,
-            },
-        );
+        if (this.reset) {
+            this.sort_stepper = new SortStepper(
+                {
+                    ...new SortData(),
+                    width: this.canvas.width,
+                    height: this.canvas.height,
+                    ctx: this.ctx,
+                    count: this.count,
+                    swapCallback: this.swapCallback(),
+                    compareCallback: this.compareCallback(),
+                    accessCallback: this.accessCallback(),
+                },
+            );
 
-        this.sort = new Sort(this.sort_type, this.sort_stepper);
-        this.sort.run();
-        this.sort_stepper.reset_items();
+            this.sort = new Sort(this.sort_type, this.sort_stepper);
+            this.sort.run();
+            this.sort_stepper.reset_items();
+
+            this.controls.resetCounters();
+        }
 
         this.gameLoop();
     }
 
     private render(): void {
-        this.sort_stepper.render();
+        let res = this.sort_stepper.render();
+
+        if (!res) {
+            clearInterval(this.interval_id);
+        }
     }
 
     private onReload(): (controls: Controls) => () => void {
         return (controls: Controls) => {
             return () => {
+                let oldsort = this.sort_type;
+                let oldcount = this.count;
+                let olddelay = this.delay;
+
                 this.sort_type = controls.dropdownChoice;
                 this.count = controls.count;
                 this.delay = controls.delay;
+
+                if (oldsort !== this.sort_type|| oldcount !== this.count) {
+                    this.reset = true;
+                } else {
+                    this.reset = false;
+                }
+
                 this.setup();
             };
+        };
+    }
+
+    private swapCallback(): () => void {
+        return () => {
+            this.controls.updateSwapCount();
+        };
+    }
+
+    private compareCallback(): () => void {
+        return () => {
+            this.controls.updateCompareCount();
+        };
+    }
+
+    private accessCallback(): () => void {
+        return () => {
+            this.controls.updateAccessCount();
         };
     }
 }

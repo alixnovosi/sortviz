@@ -29,6 +29,7 @@ $button-hover-bg: #DDDDEE;
 }
 
 .sortControlRow {
+    align-items: stretch;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -43,6 +44,7 @@ $button-hover-bg: #DDDDEE;
     }
 
     div {
+        display: flex;
         padding: 0 0.5em;
 
         label {
@@ -51,15 +53,25 @@ $button-hover-bg: #DDDDEE;
     }
 }
 
-.reload {
-    background-color: $button-bg;
-    border: 1px solid $border-color;
-    border-radius: 8px;
-    margin: 0 auto;
-    max-width: 120px;
-    padding: 0.5em 1em;
+.slideContainer {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 100%;
+
+    label, input {
+        padding: 0.25em 0;
+    }
 }
 
-.reload:hover {
-    background-color: $button-hover-bg;
+.statsContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+
+    div {
+        height: 2em;
+        margin: auto auto;
+        width: 2em;
+    }
 }

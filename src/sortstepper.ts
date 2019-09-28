@@ -1,7 +1,4 @@
-const NORMAL_COLOR: string = "#80BFFF";
-const SWAP_COLOR: string = "#DE2C2C";
-const INDEX_COLOR: string = "#24782E";
-const COMPARE_COLOR: string = "#143A42";
+import { Constants } from "./constants";
 
 export class SortData {
     public ctx: CanvasRenderingContext2D;
@@ -10,6 +7,10 @@ export class SortData {
     public width: number;
 
     public count: number;
+
+    public swapCallback: () => void;
+    public compareCallback: () => void;
+    public accessCallback: () => void;
 
     constructor() { }
 }
@@ -33,7 +34,7 @@ export class SortStepper {
     public untouched_items: Bar[] = [];
 
     private line_color: string = "#0E151C";
-    private fill_color: string = NORMAL_COLOR;
+    private fill_color: string = Constants.NORMAL_COLOR;
 
     constructor(data: SortData) {
         this.data = data;
@@ -60,7 +61,7 @@ export class SortStepper {
         }
     }
 
-    public render(): void {
+    public render(): boolean {
         this.data.ctx.clearRect(0, 0, this.data.width, this.data.height);
         let bar_width = this.data.width / (this.data.count);
         let x_pos = 0;
@@ -78,7 +79,10 @@ export class SortStepper {
         let func: () => void = this.lambda_q.shift();
         if (func) {
             func();
+            return true;
         }
+
+        return false;
     }
 
     // compare elements.
@@ -88,14 +92,15 @@ export class SortStepper {
     public compare(first: number, second: number): number {
         this.lambda_q.push(
             () => {
-                this.items[first].color = COMPARE_COLOR;
-                this.items[second].color = COMPARE_COLOR;
+                this.items[first].color = Constants.COMPARE_COLOR;
+                this.items[second].color = Constants.COMPARE_COLOR;
             }
         );
         this.lambda_q.push(
             () => {
-                this.items[first].color = NORMAL_COLOR;
-                this.items[second].color = NORMAL_COLOR;
+                this.items[first].color = Constants.NORMAL_COLOR;
+                this.items[second].color = Constants.NORMAL_COLOR;
+                this.data.compareCallback();
             }
         );
 
@@ -106,12 +111,13 @@ export class SortStepper {
     public access(index: number): number {
         this.lambda_q.push(
             () => {
-                this.items[index].color = INDEX_COLOR;
+                this.items[index].color = Constants.ACCESS_COLOR;
             }
         );
         this.lambda_q.push(
             () => {
-                this.items[index].color = NORMAL_COLOR;
+                this.items[index].color = Constants.NORMAL_COLOR;
+                this.data.accessCallback();
             }
         );
 
@@ -132,8 +138,8 @@ export class SortStepper {
         // change colors, perform swap, change colors back.
         this.lambda_q.push(
             () => {
-                this.items[first].color = SWAP_COLOR;
-                this.items[second].color = SWAP_COLOR;
+                this.items[first].color = Constants.SWAP_COLOR;
+                this.items[second].color = Constants.SWAP_COLOR;
             }
         );
         this.lambda_q.push(
@@ -143,8 +149,9 @@ export class SortStepper {
         );
         this.lambda_q.push(
             () => {
-                this.items[second].color = NORMAL_COLOR;
-                this.items[first].color = NORMAL_COLOR;
+                this.items[second].color = Constants.NORMAL_COLOR;
+                this.items[first].color = Constants.NORMAL_COLOR;
+                this.data.swapCallback();
             }
         );
 

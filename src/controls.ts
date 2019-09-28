@@ -1,21 +1,30 @@
+import { Constants} from "./constants";
 import { DropDown } from "./dropdown";
 import { Slider } from "./slider";
-import { Sort } from "./sorts";
-
-// some constants.
-const HORIZONTAL_AXIS: string = "horizontalAxis";
-const VERTICAL_AXIS: string = "verticalAxis";
 
 export class Controls {
     public base: HTMLElement;
 
+    // sort type, item count, render delay.
     public dropdownChoice: string;
     public count: number;
     public delay: number;
 
-    public warning: HTMLElement;
+    // number of swaps, from up on high.
+    private swaps: number = 0;
+    private swapCount: HTMLElement;
 
-    private reloadButton: HTMLButtonElement;
+    // compares
+    private compares: number = 0;
+    private compareCount: HTMLElement;
+
+    // and accesses.
+    private accesses: number = 0;
+    private accessCount: HTMLElement;
+
+    private updateCallback: () => void;
+
+    public warning: HTMLElement;
 
     constructor(
         base: HTMLElement,
@@ -31,8 +40,7 @@ export class Controls {
         sortingLabel.innerHTML = "sorting algorithm";
         this.base.appendChild(sortingLabel);
 
-        let dropdownRow = document.createElement("div");
-        dropdownRow.className = "sortControlRow";
+        let dropdownRow = this.createRow();
 
         this.dropdownChoice = sorts[0];
         this.count = count;
@@ -60,9 +68,7 @@ export class Controls {
         itemsLabel.innerHTML = "item count";
         this.base.appendChild(itemsLabel);
 
-        let itemSliderRow = document.createElement("div");
-        itemSliderRow.className = "sortControlRow";
-        this.base.appendChild(itemSliderRow);
+        let itemSliderRow = this.createRow();
 
         let slider = new Slider(
             itemSliderRow,
@@ -73,13 +79,11 @@ export class Controls {
         )
 
         // delay slider bar
-        let delaySliderRow = document.createElement("div");
-        delaySliderRow.className = "sortControlRow";
-        this.base.appendChild(delaySliderRow);
-
         let delayLabel = document.createElement("h4");
-        delayLabel.innerHTML = "render delay (milliseconds)";
+        delayLabel.innerHTML = "render delay (ms)";
         this.base.appendChild(delayLabel);
+
+        let delaySliderRow = this.createRow();
 
         let delaySlider = new Slider(
             delaySliderRow,
@@ -89,17 +93,59 @@ export class Controls {
             this.onDelaySliderUpdate(),
         )
 
-        this.base.appendChild(delaySliderRow);
 
-        // reload button, to apply changes.
-        this.reloadButton = document.createElement("button");
-        this.reloadButton.className = "reload";
-        this.reloadButton.name = "reload"
-        this.reloadButton.innerHTML = "Reload";
+        // color swatches and counts of array actions.
+        let statsContainer = this.createRow("statsContainer");
 
-        this.base.appendChild(this.reloadButton);
+        // swaps!
+        let swapSwatch = document.createElement("div");
+        swapSwatch.style.backgroundColor = Constants.SWAP_COLOR;
+        statsContainer.appendChild(swapSwatch);
 
-        this.reloadButton.addEventListener("click", updateCallback(this));
+        let swapSwatchName = document.createElement("h5");
+        swapSwatchName.innerHTML = "swaps";
+        statsContainer.appendChild(swapSwatchName);
+
+        // we need to access this directly later.
+        this.swapCount = document.createElement("h5");
+        this.swapCount.innerHTML = `${this.swaps}`;
+        statsContainer.appendChild(this.swapCount);
+
+        // compares!
+        let compareSwatch = document.createElement("div");
+        compareSwatch.style.backgroundColor = Constants.COMPARE_COLOR;
+        statsContainer.appendChild(compareSwatch);
+
+        let compareSwatchName = document.createElement("h5");
+        compareSwatchName.innerHTML = "compares";
+        statsContainer.appendChild(compareSwatchName);
+
+        this.compareCount = document.createElement("h5");
+        this.compareCount.innerHTML = `${this.compares}`;
+        statsContainer.appendChild(this.compareCount);
+
+        // accesses!
+        let accessSwatch = document.createElement("div");
+        accessSwatch.style.backgroundColor = Constants.ACCESS_COLOR;
+        statsContainer.appendChild(accessSwatch);
+
+        let accessSwatchName = document.createElement("h5");
+        accessSwatchName.innerHTML = "accesses";
+        statsContainer.appendChild(accessSwatchName);
+
+        this.accessCount = document.createElement("h5");
+        this.accessCount.innerHTML = `${this.accesses}`;
+        statsContainer.appendChild(this.accessCount);
+
+        // callback used for updates.
+        this.updateCallback = updateCallback(this);
+    }
+
+    public createRow(className: string="sortControlRow"): HTMLElement {
+        let row = document.createElement("div");
+        row.className = className;
+        this.base.appendChild(row);
+        return row;
     }
 
     public onDropDownUpdate(): (event: Event) => void {
@@ -107,11 +153,13 @@ export class Controls {
             let sort = event.target.value;
             this.dropdownChoice = sort;
 
-            if (Sort.slow_sorts.indexOf(sort) === -1) {
+            if (Constants.slow_sorts.indexOf(sort) === -1) {
                 this.warning.className = "hidden warning";
             } else {
                 this.warning.className = "warning";
             }
+
+            this.updateCallback();
         };
     }
 
@@ -120,6 +168,7 @@ export class Controls {
             return (event: any) => {
                 label.innerHTML = event.target.value;
                 this.count = event.target.value;
+                this.updateCallback();
             };
         };
     }
@@ -129,7 +178,36 @@ export class Controls {
             return (event: any) => {
                 label.innerHTML = event.target.value;
                 this.delay = event.target.value;
+                this.updateCallback();
             };
         };
+    }
+
+    // methods to update swaps/compares/accesses.
+    public updateSwapCount(): void {
+        this.swaps += 1;
+        this.swapCount.innerHTML = `${this.swaps}`;
+    }
+
+    public updateCompareCount(): void {
+        this.compares += 1;
+        this.compareCount.innerHTML = `${this.compares}`;
+    }
+
+    public updateAccessCount(): void {
+        this.accesses += 1;
+        this.accessCount.innerHTML = `${this.accesses}`;
+    }
+
+    // reset all counters.
+    public resetCounters(): void {
+        this.swaps = 0;
+        this.swapCount.innerHTML = `${this.swaps}`;
+
+        this.compares = 0;
+        this.compareCount.innerHTML = `${this.compares}`;
+
+        this.accesses = 0;
+        this.accessCount.innerHTML = `${this.accesses}`;
     }
 }

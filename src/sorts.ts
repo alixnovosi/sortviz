@@ -1,36 +1,10 @@
+import { Constants } from "./constants";
 import { SortStepper } from "./sortstepper";
 
 export class Sort {
-    public static readonly QUICKSORT = "QUICKSORT";
-    public static readonly HEAPSORT = "HEAPSORT";
-    public static readonly STOOGESORT = "STOOGESORT";
-    public static readonly SELECTION_SORT = "SELECTION_SORT";
-    public static readonly INSERTION_SORT = "INSERTION_SORT";
-    public static readonly BUBBLE_SORT = "BUBBLE_SORT";
-    public static readonly COCKTAIL_SHAKER_SORT = "COCKTAIL_SHAKER_SORT";
-
     public sort_type: string;
 
     private stepper: SortStepper;
-
-    public static supported_sorts: string[] = [
-        Sort.QUICKSORT,
-        Sort.HEAPSORT,
-        Sort.STOOGESORT,
-        Sort.SELECTION_SORT,
-        Sort.INSERTION_SORT,
-        Sort.BUBBLE_SORT,
-        Sort.COCKTAIL_SHAKER_SORT,
-    ];
-
-    // sorts we should give a warning on that they're inefficient.
-    // TODO maybe split into slow and VERY slow?
-    public static slow_sorts: string[] = [
-        Sort.STOOGESORT,
-        Sort.SELECTION_SORT,
-        Sort.BUBBLE_SORT,
-        Sort.COCKTAIL_SHAKER_SORT,
-    ];
 
     constructor(sort_type: string, stepper: SortStepper) {
         this.sort_type = sort_type;
@@ -38,48 +12,49 @@ export class Sort {
     }
 
     public run(): void {
-        if (Sort.supported_sorts.indexOf(this.sort_type) === -1) {
+        if (Constants.supported_sorts.indexOf(this.sort_type) === -1) {
             return;
         }
 
         // TODO find a way to do this automatically off the supported sorts list.
-        if (this.sort_type == Sort.QUICKSORT) {
+        if (this.sort_type == Constants.QUICKSORT) {
             this.quicksort();
-        } else if (this.sort_type == Sort.HEAPSORT) {
+        } else if (this.sort_type == Constants.HEAPSORT) {
             this.heapsort();
-        } else if (this.sort_type == Sort.STOOGESORT) {
+        } else if (this.sort_type == Constants.STOOGESORT) {
             this.stoogesort();
-        } else if (this.sort_type == Sort.SELECTION_SORT) {
+        } else if (this.sort_type == Constants.SELECTION_SORT) {
             this.selection_sort();
-        } else if (this.sort_type == Sort.INSERTION_SORT) {
+        } else if (this.sort_type == Constants.INSERTION_SORT) {
             this.insertion_sort();
-        } else if (this.sort_type == Sort.BUBBLE_SORT) {
+        } else if (this.sort_type == Constants.BUBBLE_SORT) {
             this.bubble_sort();
-        } else if (this.sort_type == Sort.COCKTAIL_SHAKER_SORT) {
+        } else if (this.sort_type == Constants.COCKTAIL_SHAKER_SORT) {
             this.cocktail_shaker_sort();
         }
     }
 
+    // helpers!
+    private partition(start: number, end: number) {
+        let follower = start;
+        let leader = start;
+
+        while (leader < end) {
+            if (this.stepper.compare(leader, end) < 0) {
+                this.stepper.swap(follower, leader);
+                follower += 1;
+            }
+
+            leader += 1;
+        }
+
+        this.stepper.swap(follower, end);
+
+        return follower;
+    };
+
+    // sort methods!!!
     private quicksort(): void {
-        let partition: (stepper: SortStepper, start: number, end: number) =>
-            number = (stepper: SortStepper, start: number, end: number) => {
-                let follower = start;
-                let leader = start;
-
-                while (leader < end) {
-                    if (stepper.compare(leader, end) < 0) {
-                        stepper.swap(follower, leader);
-                        follower += 1;
-                    }
-
-                    leader += 1;
-                }
-
-                stepper.swap(follower, end);
-
-                return follower;
-        };
-
         let ip_quicksort: (stepper: SortStepper, start: number, end: number) =>
             void = (stepper: SortStepper, start: number, end: number) => {
                 if (start >= end) {
@@ -90,7 +65,7 @@ export class Sort {
 
                 stepper.swap(rand_pivot_index, end);
 
-                let pivot = partition(stepper, start, end);
+                let pivot = this.partition(start, end);
                 ip_quicksort(stepper, start, pivot-1);
                 ip_quicksort(stepper, pivot+1, end);
         };
