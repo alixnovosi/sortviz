@@ -17,8 +17,8 @@ class App {
     private width: number = 1600;
 
     // store here so we can pass to controls and sortstepper on initialization.
-    private count: number = 120;
-    private delay: number = 10;
+    private count: number = 100;
+    private delay: number = 50;
 
     private interval_id: any;
 

@@ -6,6 +6,8 @@ export class Sort {
     public static readonly STOOGESORT = "STOOGESORT";
     public static readonly SELECTION_SORT = "SELECTION_SORT";
     public static readonly INSERTION_SORT = "INSERTION_SORT";
+    public static readonly BUBBLE_SORT = "BUBBLE_SORT";
+    public static readonly COCKTAIL_SHAKER_SORT = "COCKTAIL_SHAKER_SORT";
 
     public sort_type: string;
 
@@ -17,6 +19,8 @@ export class Sort {
         Sort.STOOGESORT,
         Sort.SELECTION_SORT,
         Sort.INSERTION_SORT,
+        Sort.BUBBLE_SORT,
+        Sort.COCKTAIL_SHAKER_SORT,
     ];
 
     // sorts we should give a warning on that they're inefficient.
@@ -24,6 +28,8 @@ export class Sort {
     public static slow_sorts: string[] = [
         Sort.STOOGESORT,
         Sort.SELECTION_SORT,
+        Sort.BUBBLE_SORT,
+        Sort.COCKTAIL_SHAKER_SORT,
     ];
 
     constructor(sort_type: string, stepper: SortStepper) {
@@ -47,6 +53,10 @@ export class Sort {
             this.selection_sort();
         } else if (this.sort_type == Sort.INSERTION_SORT) {
             this.insertion_sort();
+        } else if (this.sort_type == Sort.BUBBLE_SORT) {
+            this.bubble_sort();
+        } else if (this.sort_type == Sort.COCKTAIL_SHAKER_SORT) {
+            this.cocktail_shaker_sort();
         }
     }
 
@@ -188,6 +198,7 @@ export class Sort {
         }
     }
 
+    // nearly direct from https://en.wikipedia.org/wiki/Insertion_sort
     private insertion_sort() {
         let i = 1;
         while (i < this.stepper.data.count) {
@@ -198,6 +209,57 @@ export class Sort {
             }
 
             i += 1
+        }
+    }
+
+    // the most optimized bubblesort off https://en.wikipedia.org/wiki/Bubble_sort
+    private bubble_sort() {
+        let n = this.stepper.data.count;
+        let newn = 0;
+        do {
+            newn = 0;
+
+            for (let i = 1; i < n; i++) {
+                if (this.stepper.compare(i-1, i) > 0) {
+                    this.stepper.swap(i-1, i);
+                    newn = i;
+                }
+            }
+            n = newn;
+
+        } while (n > 1);
+    }
+
+    // https://en.wikipedia.org/wiki/Cocktail_shaker_sort
+    // and having to translate matlab loops into javascript.
+    private cocktail_shaker_sort() {
+        let begin = 0;
+        let end = this.stepper.data.count-1;
+        while (begin <= end) {
+            let new_begin = end;
+            let new_end = begin;
+
+            // forward pass.
+            for (let i = begin; i < end; i++) {
+                if (this.stepper.compare(i, i+1) > 0) {
+                    this.stepper.swap(i, i+1);
+                    new_end = i;
+                }
+            }
+
+            // decrease end because after that point, the order is correct.
+            end = new_end;
+
+            // rev pass.
+            for (let i = end; i >= begin; i--) {
+                if (this.stepper.compare(i, i+1) > 0) {
+                    this.stepper.swap(i, i+1);
+                    new_begin = i;
+                }
+            }
+
+            // increase begin because we know things are sorted before that.
+            begin = new_begin;
         }
     }
 }

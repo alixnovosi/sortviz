@@ -49,7 +49,7 @@ export class Controls {
         // sort choice dropdown and label
         this.warning = document.createElement("h5");
         this.warning.innerHTML = "warning!<br>" +
-            "this is an inefficient search!<br>" +
+            "this is an inefficient sort!<br>" +
             "it's recommended that you keep items < 40 and delay < 100 or so.";
         this.warning.className = "hidden";
 
