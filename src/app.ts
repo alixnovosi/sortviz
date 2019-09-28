@@ -1,3 +1,4 @@
+import { Controls } from "./controls";
 import { SortData, SortStepper } from "./sortstepper";
 import { Sort } from "./sorts";
 
@@ -6,6 +7,8 @@ import "./styles/main.scss";
 class App {
     private base: HTMLElement;
 
+    private controls: Controls;
+
     // primary canvas.
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
@@ -13,12 +16,19 @@ class App {
     private height: number = 900;
     private width: number = 1600;
 
+    // store here so we can pass to controls and sortstepper on initialization.
+    private count: number = 120;
+    private delay: number = 10;
+
+    private interval_id: any;
+
     private bgColor: string = "#CCCCFF";
     private lineColor: string = "#111122";
     private highlightColor: string = "#EFEFFF";
 
     public sort_stepper: SortStepper;
     public sort: Sort;
+    public sort_type: string;
 
     constructor() {
         this.base = <HTMLElement>document.getElementById("app");
@@ -30,31 +40,45 @@ class App {
 
         this.base.appendChild(this.canvas);
 
+        let div = <HTMLElement>document.createElement("div");
+        div.className = "sortControlsBox";
+        this.base.appendChild(div);
+        this.controls = new Controls(
+            div,
+            [
+                Sort.QUICKSORT,
+                Sort.HEAPSORT,
+                Sort.STOOGESORT,
+            ],
+            this.count,
+            this.delay,
+            this.onReload(),
+        )
+
+        this.sort_type = Sort.QUICKSORT;
+    }
+
+    private gameLoop(): void {
+        clearInterval(this.interval_id);
+
+        this.interval_id = setInterval(
+            () => this.render(),
+            this.delay,
+        );
+    }
+
+    public setup(): void {
         this.sort_stepper = new SortStepper(
             {
                 ...new SortData(),
                 width: this.canvas.width,
                 height: this.canvas.height,
                 ctx: this.ctx,
+                count: this.count,
             },
         );
 
-        this.sort = new Sort(Sort.QUICKSORT, this.sort_stepper);
-    }
-
-    private gameLoop(): void {
-        this.render();
-
-        setTimeout(this.bindRequestAnimationFrame(), 1);
-    }
-
-    private bindRequestAnimationFrame(): () => void {
-        return () => {
-            requestAnimationFrame(this.gameLoop.bind(this));
-        };
-    }
-
-    public setup(): void {
+        this.sort = new Sort(this.sort_type, this.sort_stepper);
         this.sort.run();
         this.sort_stepper.reset_items();
 
@@ -65,8 +89,15 @@ class App {
         this.sort_stepper.render();
     }
 
-    private sleep(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    private onReload(): (controls: Controls) => () => void {
+        return (controls: Controls) => {
+            return () => {
+                this.sort_type = controls.dropdownChoice;
+                this.count = controls.count;
+                this.delay = controls.delay;
+                this.setup();
+            };
+        };
     }
 }
 

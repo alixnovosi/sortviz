@@ -5,11 +5,20 @@ export class Sort {
     public static readonly HEAPSORT = "HEAPSORT";
     public static readonly STOOGESORT = "STOOGESORT";
 
-    private sort_type: string;
+    public sort_type: string;
 
     private stepper: SortStepper;
 
-    private static supported_sorts: string[] = [Sort.QUICKSORT];
+    private static supported_sorts: string[] = [
+        Sort.QUICKSORT,
+        Sort.HEAPSORT,
+        Sort.STOOGESORT,
+    ];
+
+    // sorts we should give a warning on that they're inefficient.
+    public static slow_sorts: string[] = [
+        Sort.STOOGESORT,
+    ];
 
     constructor(sort_type: string, stepper: SortStepper) {
         this.sort_type = sort_type;
@@ -71,7 +80,7 @@ export class Sort {
 
             constructor(stepper: SortStepper) {
                 this.stepper = stepper;
-                this.count = this.stepper.count;
+                this.count = this.stepper.data.count;
 
                 this.heapify();
             }
@@ -130,7 +139,7 @@ export class Sort {
         }
     }
 
-    private stoogesort(start: number=0, end: number=this.stepper.count-1): void {
+    private stoogesort(start: number=0, end: number=this.stepper.data.count-1): void {
         // if the first element is greater than the last element, swap them.
         if (this.stepper.compare(start, end) < 0) {
             this.stepper.swap(start, end);

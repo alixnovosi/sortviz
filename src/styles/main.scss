@@ -7,7 +7,7 @@ $button-hover-bg: #DDDDEE;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    padding: 2em;
+    padding: 1em;
 
     canvas {
         border: 2px solid $border-color;
@@ -15,16 +15,20 @@ $button-hover-bg: #DDDDEE;
     }
 }
 
-.lorenzControlsBox {
+.sortControlsBox {
     border: 1px solid $border-color;
     border-radius: 5px;
     display: flex;
     flex-direction: column;
-    margin: 0.5em;
+    margin: 0 0.5em;
     padding: 1em;
 }
 
-.lorenzControlRow {
+.hidden {
+    display: none;
+}
+
+.sortControlRow {
     display: flex;
     flex-direction: row;
     justify-content: space-between;

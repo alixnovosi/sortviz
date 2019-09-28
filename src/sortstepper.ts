@@ -9,6 +9,8 @@ export class SortData {
     public height: number;
     public width: number;
 
+    public count: number;
+
     constructor() { }
 }
 
@@ -29,7 +31,6 @@ export class SortStepper {
 
     public items: Bar[] = [];
     public untouched_items: Bar[] = [];
-    public count: number = 25;
 
     private line_color: string = "#0E151C";
     private fill_color: string = NORMAL_COLOR;
@@ -37,10 +38,10 @@ export class SortStepper {
     constructor(data: SortData) {
         this.data = data;
 
-        let high_cap = Math.floor(this.data.height * 0.90);
-        let low_cap = Math.floor(this.data.height * 0.10);
+        let high_cap = Math.floor(this.data.height * 0.95);
+        let low_cap = Math.floor(this.data.height * 0.05);
 
-        for (let i = 0; i < this.count; i++) {
+        for (let i = 0; i < this.data.count; i++) {
             let value = Math.floor(Math.random() * (high_cap-low_cap) + low_cap);
             this.items.push(
                 new Bar(value, this.fill_color),
@@ -55,7 +56,7 @@ export class SortStepper {
 
     public render(): void {
         this.data.ctx.clearRect(0, 0, this.data.width, this.data.height);
-        let bar_width = this.data.width / (this.count);
+        let bar_width = this.data.width / (this.data.count);
         let x_pos = 0;
         for (let item of this.items) {
             this.data.ctx.beginPath();
