@@ -29,7 +29,7 @@ export class SortStepper {
 
     public items: Bar[] = [];
     public untouched_items: Bar[] = [];
-    public count: number = 120;
+    public count: number = 20;
 
     private line_color: string = "#0E151C";
     private fill_color: string = NORMAL_COLOR;
@@ -93,10 +93,6 @@ export class SortStepper {
         );
 
         return this.items[first].value - this.items[second].value;
-        let first_val = this.items[first].value;
-        let second_val = this.items[second].value;
-        console.log(`first ${first_val} second ${second_val}`);
-        return first_val - second_val;
     }
 
     // access element and show this happened.

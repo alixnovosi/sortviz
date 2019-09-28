@@ -3,6 +3,7 @@ import { SortStepper } from "./sortstepper";
 export class Sort {
     public static readonly QUICKSORT = "QUICKSORT";
     public static readonly HEAPSORT = "HEAPSORT";
+    public static readonly STOOGESORT = "STOOGESORT";
 
     private sort_type: string;
 
@@ -20,6 +21,8 @@ export class Sort {
             this.quicksort();
         } else if (this.sort_type == Sort.HEAPSORT) {
             this.heapsort();
+        } else if (this.sort_type == Sort.STOOGESORT) {
+            this.stoogesort();
         }
     }
 
@@ -94,18 +97,13 @@ export class Sort {
                 let root: number = index;
 
                 let first_index: number = (root*2) + 1;
-                console.log(`root ${root} first ${first_index}`);
                 while (first_index < this.count-1) {
 
                     let maxdex: number = first_index;
                     let second_index: number = (root*2) + 2;
-                    console.log(`second ${second_index}`);
-
                     if (second_index < this.count-1) {
-                        console.log(`comparing 2nd ${second_index} and first ${first_index}`);
 
                         let res = this.stepper.compare(second_index, first_index);
-                        console.log(`got res ${res}`);
                         if (res < 0) {
                             maxdex = second_index;
                         }
@@ -116,12 +114,12 @@ export class Sort {
                         root = maxdex;
 
                         first_index = Math.floor((root*2) + 1);
+
                     // nothing to do.
                     } else {
                         return;
                     }
                 }
-                console.log(`sifted down ${index}`);
             }
         }
 
@@ -130,5 +128,27 @@ export class Sort {
         while (heap.count > 1) {
             heap.delete_max();
         }
+    }
+
+    private stoogesort(start: number=0, end: number=this.stepper.count-1): void {
+        // if the first element is greater than the last element, swap them.
+        if (this.stepper.compare(start, end) < 0) {
+            this.stepper.swap(start, end);
+        }
+
+        // return for less than 3 elements.
+        if ((end-start+1) < 3) {
+            return;
+        }
+
+        // divide into thirds, rounding up (very important!!)
+        let div = Math.ceil((end - start + 1) / 3);
+
+        // sort the first two thirds,
+        // then the last two thirds,
+        // then the first two thirds again.
+        this.stoogesort(start, end-div);
+        this.stoogesort(start+div, end);
+        this.stoogesort(start, end-div);
     }
 }

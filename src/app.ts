@@ -39,7 +39,7 @@ class App {
             },
         );
 
-        this.sort = new Sort(Sort.HEAPSORT, this.sort_stepper);
+        this.sort = new Sort(Sort.STOOGESORT, this.sort_stepper);
     }
 
     private gameLoop(): void {
