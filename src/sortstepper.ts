@@ -29,7 +29,7 @@ export class SortStepper {
 
     public items: Bar[] = [];
     public untouched_items: Bar[] = [];
-    public count: number = 20;
+    public count: number = 25;
 
     private line_color: string = "#0E151C";
     private fill_color: string = NORMAL_COLOR;

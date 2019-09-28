@@ -137,18 +137,19 @@ export class Sort {
         }
 
         // return for less than 3 elements.
-        if ((end-start+1) < 3) {
-            return;
+        if ((end-start+1) > 2) {
+
+            // divide into thirds.
+            // important to round down here,
+            // so that the 2/3s chunks in the recursive calls round up.
+            let div = Math.floor((end - start + 1) / 3);
+
+            // sort the first two thirds,
+            // then the last two thirds,
+            // then the first two thirds again.
+            this.stoogesort(start, end-div);
+            this.stoogesort(start+div, end);
+            this.stoogesort(start, end-div);
         }
-
-        // divide into thirds, rounding up (very important!!)
-        let div = Math.ceil((end - start + 1) / 3);
-
-        // sort the first two thirds,
-        // then the last two thirds,
-        // then the first two thirds again.
-        this.stoogesort(start, end-div);
-        this.stoogesort(start+div, end);
-        this.stoogesort(start, end-div);
     }
 }
