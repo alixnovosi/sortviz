@@ -56,9 +56,7 @@ export class Controls {
 
         // sort choice dropdown and label
         this.warning = document.createElement("h5");
-        this.warning.innerHTML = "warning!<br>" +
-            "this is an inefficient sort!<br>" +
-            "it's recommended that you keep items and delay < 40 or so.";
+        this.warning.innerHTML = "warning! slow sort";
         this.warning.className = "hidden";
 
         this.base.appendChild(this.warning);
