@@ -7,6 +7,8 @@ export class Constants {
     public static readonly INSERTION_SORT = "INSERTION_SORT";
     public static readonly BUBBLE_SORT = "BUBBLE_SORT";
     public static readonly COCKTAIL_SHAKER_SORT = "COCKTAIL_SHAKER_SORT";
+    public static readonly COMB_SORT = "COMB_SORT";
+    public static readonly SHELLSORT = "SHELLSORT";
 
     // bar colors for various sort actions.
     public static readonly NORMAL_COLOR: string = "#80BFFF";
@@ -22,6 +24,8 @@ export class Constants {
         Constants.INSERTION_SORT,
         Constants.BUBBLE_SORT,
         Constants.COCKTAIL_SHAKER_SORT,
+        Constants.COMB_SORT,
+        Constants.SHELLSORT,
     ];
 
     // sorts we should give a warning on that they're inefficient.

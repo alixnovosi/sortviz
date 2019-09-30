@@ -106,12 +106,16 @@ export class Sort {
             this.alg = this.bubble_sort;
         } else if (this.sort_type == Constants.COCKTAIL_SHAKER_SORT) {
             this.alg = this.cocktail_shaker_sort;
+        } else if (this.sort_type == Constants.COMB_SORT) {
+            this.alg = this.comb_sort;
+        } else if (this.sort_type == Constants.SHELLSORT) {
+            this.alg = this.shellsort;
         }
 
         // these sorts are all designed so they optionally can work on subsections
         // of the array.
         // so, make sure they sort the whole thing.
-        this.alg(0, this.stepper.data.count - 1);
+        this.alg(0, this.stepper.data.count-1);
     }
 
     // helpers!
@@ -256,6 +260,72 @@ export class Sort {
 
             // increase begin because we know things are sorted before that.
             start = new_begin;
+        }
+    }
+
+    // https://en.wikipedia.org/wiki/Comb_sort
+    // one way to improve bubble sort.
+    private comb_sort(start: number, end: number) {
+        let len = end - start + 1;
+
+        let shrink: number = 1.3;
+        let sorted: boolean = false;
+
+        let gap: number= Math.floor(len / shrink);
+
+        while (!sorted) {
+            // if we complete the pass at gap 1 without swaps,
+            // we're done.
+            if (gap <= 1) {
+                gap = 1;
+                sorted = true;
+            }
+
+            // comb once over array section.
+            let i = start;
+            while (i + gap <= end) {
+                if (this.stepper.compare(i, i+gap) > 0) {
+                    this.stepper.swap(i, i+gap);
+                    sorted = false;
+                }
+
+                i += 1;
+            }
+
+            // update gap for next comb.
+            gap = Math.floor(gap / shrink);
+        }
+    }
+
+    // https://en.wikipedia.org/wiki/Shellsort
+    // the computational complexity is amazing.
+    private shellsort(start: number, end: number) {
+        // start with largest gap and work down.
+        let gaps = [701, 301, 132, 57, 23, 10, 4, 1];
+        for (let gap of gaps) {
+
+            // these all reference a as array because I adapted this from shellsort on wikipedia,
+            // but they'll all really talk to this.stepper.
+
+            // do gap insertion sort at this size.
+            // the first gap elements a[start...gap-1] are already in gapped order.
+            // keep adding one more element until the entire array is gap sorted.
+            for (let i = gap+start; i <= end; i++) {
+
+                // add a[i] to the elements that have been gap sorted.
+                // save a[i] in temp and make a hole at position i.
+                let temp: number = this.stepper.access(i);
+
+                // shift earlier gap-sorted elements up until the correct location
+                // for a[i] is found.
+                let j = i;
+                for ( ; j >= gap+start && this.stepper.access(j-gap) > temp; j-=gap) {
+                    this.stepper.swap(j, j-gap);
+                }
+
+                // put temp (the original a[i]) in its correct location.
+                this.stepper.assign(j, temp);
+            }
         }
     }
 }

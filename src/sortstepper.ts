@@ -124,6 +124,27 @@ export class SortStepper {
         return this.items[index].value;
     }
 
+    // set element at index.
+    // only shellsort uses this so far, so we duplicate access color.
+    public assign(index: number, value: number): void {
+        this.lambda_q.push(
+            () => {
+                this.items[index].color = Constants.ACCESS_COLOR;
+            }
+        );
+        this.lambda_q.push(
+            () => {
+                this.items[index].value = value;
+            }
+        );
+        this.lambda_q.push(
+            () => {
+                this.items[index].color = Constants.NORMAL_COLOR;
+                this.data.accessCallback();
+            }
+        );
+    }
+
     // swap two elements with a color change.
     public swap(first: number, second: number): void {
         if (first < 0 || first >= this.items.length ||
