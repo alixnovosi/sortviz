@@ -1,10 +1,85 @@
 import { Constants } from "./constants";
 import { SortStepper } from "./sortstepper";
 
+// helper class for heapsort and block merge sort.
+class MaxHeap {
+    public stepper: SortStepper;
+
+    public start: number;
+    public end: number;
+
+    constructor(stepper: SortStepper, start: number, end: number) {
+        this.stepper = stepper;
+
+        this.start = start;
+        this.end = end;
+
+        this.heapify();
+    }
+
+    private get_parent(index: number): number {
+        return Math.floor((index-1) / 2) + this.start;
+    }
+
+    private get_left_child(index: number): number {
+        return Math.floor(2*index + 1) - this.start;
+    }
+
+    private get_right_child(index: number): number {
+        return Math.floor(2*index + 2) - this.start;
+    }
+
+    private heapify(): void {
+        let start = this.get_parent(this.end);
+        while (start >= this.start) {
+            this.sift_down(start)
+            start -= 1;
+        }
+    }
+
+    // swap max to end, decrease end pointer, and sift to restore balance.
+    public swap_max_out(): void {
+        this.stepper.swap(this.start, this.end);
+        this.end -= 1;
+        this.sift_down(this.start);
+    }
+
+    // repair the heap starting at "start".
+    // more and more from https://en.wikipedia.org/wiki/Heapsort as I kept fighting bugs.
+    public sift_down(start: number): void {
+        let root = start;
+
+        while (this.get_left_child(root) <= this.end) {
+            let child = this.get_left_child(root);
+            let swap = root; // keep track of child to swap with - may end up being root.
+
+            // should we swap with the left child?
+            if (this.stepper.compare(swap, child) < 0) {
+                swap = child;
+            }
+
+            // if there is a right child and it's bigger than left/the root, swap with that.
+            if (child+1 <= this.end && this.stepper.compare(swap, child+1) < 0) {
+                swap = child+1;
+            }
+
+            // nothing to do.
+            if (swap === root) {
+                return;
+            }
+
+            this.stepper.swap(root, swap);
+            root = swap;
+        }
+    }
+}
+
 export class Sort {
     public sort_type: string;
 
     private stepper: SortStepper;
+
+    private alg: (start: number, end: number) => void;
 
     constructor(sort_type: string, stepper: SortStepper) {
         this.sort_type = sort_type;
@@ -18,20 +93,25 @@ export class Sort {
 
         // TODO find a way to do this automatically off the supported sorts list.
         if (this.sort_type == Constants.QUICKSORT) {
-            this.quicksort();
+            this.alg = this.quicksort
         } else if (this.sort_type == Constants.HEAPSORT) {
-            this.heapsort();
+            this.alg = this.heapsort;
         } else if (this.sort_type == Constants.STOOGESORT) {
-            this.stoogesort();
+            this.alg = this.stoogesort;
         } else if (this.sort_type == Constants.SELECTION_SORT) {
-            this.selection_sort();
+            this.alg = this.selection_sort;
         } else if (this.sort_type == Constants.INSERTION_SORT) {
-            this.insertion_sort();
+            this.alg = this.insertion_sort;
         } else if (this.sort_type == Constants.BUBBLE_SORT) {
-            this.bubble_sort();
+            this.alg = this.bubble_sort;
         } else if (this.sort_type == Constants.COCKTAIL_SHAKER_SORT) {
-            this.cocktail_shaker_sort();
+            this.alg = this.cocktail_shaker_sort;
         }
+
+        // these sorts are all designed so they optionally can work on subsections
+        // of the array.
+        // so, make sure they sort the whole thing.
+        this.alg(0, this.stepper.data.count - 1);
     }
 
     // helpers!
@@ -54,92 +134,35 @@ export class Sort {
     };
 
     // sort methods!!!
-    private quicksort(): void {
-        let ip_quicksort: (stepper: SortStepper, start: number, end: number) =>
-            void = (stepper: SortStepper, start: number, end: number) => {
-                if (start >= end) {
-                    return;
-                }
-
-                let rand_pivot_index = Math.floor((Math.random() * (end-start+1)) + start);
-
-                stepper.swap(rand_pivot_index, end);
-
-                let pivot = this.partition(start, end);
-                ip_quicksort(stepper, start, pivot-1);
-                ip_quicksort(stepper, pivot+1, end);
-        };
-
-        return ip_quicksort(this.stepper, 0, this.stepper.items.length-1);
-    }
-
-    private heapsort(): void {
-        class MaxHeap {
-            public stepper: SortStepper;
-            public count: number;
-
-            constructor(stepper: SortStepper) {
-                this.stepper = stepper;
-                this.count = this.stepper.data.count;
-
-                this.heapify();
-            }
-
-            private heapify() {
-                let start = Math.floor((this.count-1-1) / 2);
-                while (start >= 0) {
-                    this.sift_down(start, this.count-1)
-                    start -= 1;
-                }
-            }
-
-            // swap item at index into correct heap position.
-            public sift_down(start: number, end: number) {
-                let root = start;
-
-                let first_index = (root*2) + 1;
-                while (first_index <= end) {
-
-                    let maxdex: number = first_index;
-                    let second_index: number = (root*2) + 2;
-                    if (second_index <= end) {
-
-                        if (this.stepper.compare(second_index, first_index) > 0) {
-                            maxdex = second_index;
-                        }
-                    }
-
-                    if (this.stepper.compare(root, maxdex) < 0) {
-                        this.stepper.swap(root, maxdex);
-                        root = maxdex;
-
-                        first_index = (root*2) + 1;
-
-                    // nothing to do.
-                    } else {
-                        return;
-                    }
-                }
-            }
+    private quicksort(start: number, end: number): void {
+        if (start >= end) {
+            return;
         }
 
-        let heap = new MaxHeap(this.stepper);
+        let rand_pivot_index = Math.floor((Math.random() * (end-start+1)) + start);
 
-        let end = heap.count-1;
-        while (end > 0) {
-            this.stepper.swap(end, 0);
-            end -= 1;
-            heap.sift_down(0, end);
+        this.stepper.swap(rand_pivot_index, end);
+
+        let pivot = this.partition(start, end);
+        this.quicksort(start, pivot-1);
+        this.quicksort(pivot+1, end);
+    }
+
+    private heapsort(start: number, end: number): void {
+        let heap = new MaxHeap(this.stepper, start, end);
+
+        while (heap.end != heap.start) {
+            heap.swap_max_out();
         }
     }
 
-    private stoogesort(start: number=0, end: number=this.stepper.data.count-1): void {
+    private stoogesort(start: number, end: number): void {
         // if the first element is greater than the last element, swap them.
         if (this.stepper.compare(start, end) > 0) {
             this.stepper.swap(start, end);
         }
 
-        // return for less than 3 elements.
+        // only run for over two elements.
         if ((end-start+1) > 2) {
 
             // divide into thirds.
@@ -156,13 +179,13 @@ export class Sort {
         }
     }
 
-    private selection_sort() {
-        let sorted_cutoff = 0;
+    private selection_sort(start: number, end: number) {
+        let sorted_cutoff = start;
 
-        while (sorted_cutoff < this.stepper.data.count) {
+        while (sorted_cutoff <= end) {
             let sindex = sorted_cutoff;
 
-            for (let i = sindex; i < this.stepper.data.count; i++) {
+            for (let i = sindex; i <= end; i++) {
                 if (this.stepper.compare(sindex, i) > 0) {
                     sindex = i;
                 }
@@ -174,11 +197,11 @@ export class Sort {
     }
 
     // nearly direct from https://en.wikipedia.org/wiki/Insertion_sort
-    private insertion_sort() {
-        let i = 1;
-        while (i < this.stepper.data.count) {
+    private insertion_sort(start: number, end: number) {
+        let i = start+1;
+        while (i <= end) {
             let j = i;
-            while (j > 0 && this.stepper.compare(j-1, j) > 0) {
+            while (j > start && this.stepper.compare(j-1, j) > 0) {
                 this.stepper.swap(j, j-1);
                 j -= 1;
             }
@@ -188,13 +211,13 @@ export class Sort {
     }
 
     // the most optimized bubblesort off https://en.wikipedia.org/wiki/Bubble_sort
-    private bubble_sort() {
-        let n = this.stepper.data.count;
-        let newn = 0;
+    private bubble_sort(start: number, end: number) {
+        let n = end+1;
+        let newn = start;
         do {
-            newn = 0;
+            newn = start;
 
-            for (let i = 1; i < n; i++) {
+            for (let i = start+1; i < n; i++) {
                 if (this.stepper.compare(i-1, i) > 0) {
                     this.stepper.swap(i-1, i);
                     newn = i;
@@ -202,20 +225,18 @@ export class Sort {
             }
             n = newn;
 
-        } while (n > 1);
+        } while (n > start+1);
     }
 
     // https://en.wikipedia.org/wiki/Cocktail_shaker_sort
     // and having to translate matlab loops into javascript.
-    private cocktail_shaker_sort() {
-        let begin = 0;
-        let end = this.stepper.data.count-1;
-        while (begin <= end) {
+    private cocktail_shaker_sort(start: number, end: number) {
+        while (start <= end) {
             let new_begin = end;
-            let new_end = begin;
+            let new_end = start;
 
             // forward pass.
-            for (let i = begin; i < end; i++) {
+            for (let i = start; i < end; i++) {
                 if (this.stepper.compare(i, i+1) > 0) {
                     this.stepper.swap(i, i+1);
                     new_end = i;
@@ -226,7 +247,7 @@ export class Sort {
             end = new_end;
 
             // rev pass.
-            for (let i = end; i >= begin; i--) {
+            for (let i = end; i >= start; i--) {
                 if (this.stepper.compare(i, i+1) > 0) {
                     this.stepper.swap(i, i+1);
                     new_begin = i;
@@ -234,7 +255,7 @@ export class Sort {
             }
 
             // increase begin because we know things are sorted before that.
-            begin = new_begin;
+            start = new_begin;
         }
     }
 }
