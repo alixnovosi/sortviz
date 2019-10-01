@@ -10,6 +10,7 @@ export class Constants {
     public static readonly COCKTAIL_SHAKER_SORT = "COCKTAIL_SHAKER_SORT";
     public static readonly COMB_SORT = "COMB_SORT";
     public static readonly SHELLSORT = "SHELLSORT";
+    public static readonly GNOME_SORT = "GNOME_SORT";
 
     public static supported_sorts: string[] = [
         Constants.QUICKSORT,
@@ -20,6 +21,7 @@ export class Constants {
         Constants.BUBBLE_SORT,
         Constants.COMB_SORT,
         Constants.COCKTAIL_SHAKER_SORT,
+        Constants.GNOME_SORT,
         Constants.STOOGESORT,
     ];
 
@@ -30,6 +32,7 @@ export class Constants {
         Constants.SELECTION_SORT,
         Constants.BUBBLE_SORT,
         Constants.COCKTAIL_SHAKER_SORT,
+        Constants.GNOME_SORT,
     ];
 
     // supported data types.

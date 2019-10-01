@@ -92,24 +92,26 @@ export class Sort {
         }
 
         // TODO find a way to do this automatically off the supported sorts list.
-        if (this.sort_type == Constants.QUICKSORT) {
+        if (this.sort_type === Constants.QUICKSORT) {
             this.alg = this.quicksort
-        } else if (this.sort_type == Constants.HEAPSORT) {
+        } else if (this.sort_type === Constants.HEAPSORT) {
             this.alg = this.heapsort;
-        } else if (this.sort_type == Constants.STOOGESORT) {
+        } else if (this.sort_type === Constants.STOOGESORT) {
             this.alg = this.stoogesort;
-        } else if (this.sort_type == Constants.SELECTION_SORT) {
+        } else if (this.sort_type === Constants.SELECTION_SORT) {
             this.alg = this.selection_sort;
-        } else if (this.sort_type == Constants.INSERTION_SORT) {
+        } else if (this.sort_type === Constants.INSERTION_SORT) {
             this.alg = this.insertion_sort;
-        } else if (this.sort_type == Constants.BUBBLE_SORT) {
+        } else if (this.sort_type === Constants.BUBBLE_SORT) {
             this.alg = this.bubble_sort;
-        } else if (this.sort_type == Constants.COCKTAIL_SHAKER_SORT) {
+        } else if (this.sort_type === Constants.COCKTAIL_SHAKER_SORT) {
             this.alg = this.cocktail_shaker_sort;
-        } else if (this.sort_type == Constants.COMB_SORT) {
+        } else if (this.sort_type === Constants.COMB_SORT) {
             this.alg = this.comb_sort;
-        } else if (this.sort_type == Constants.SHELLSORT) {
+        } else if (this.sort_type === Constants.SHELLSORT) {
             this.alg = this.shellsort;
+        } else if (this.sort_type === Constants.GNOME_SORT) {
+            this.alg = this.gnomesort;
         }
 
         // these sorts are all designed so they optionally can work on subsections
@@ -325,6 +327,21 @@ export class Sort {
 
                 // put temp (the original a[i]) in its correct location.
                 this.stepper.assign(j, temp);
+            }
+        }
+    }
+
+    // https://en.wikipedia.org/wiki/Gnome_sort
+    // the computational complexity is amazing.
+    private gnomesort(start: number, end: number) {
+        console.log("oy");
+        let pos = start;
+        while (pos <= end) {
+            if (pos === start || this.stepper.compare(pos, pos-1) >= 0) {
+                pos += 1;
+            } else {
+                this.stepper.swap(pos, pos-1);
+                pos -= 1;
             }
         }
     }
