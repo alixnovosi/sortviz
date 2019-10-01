@@ -20,6 +20,7 @@ class App {
     // store here so we can pass to controls and sortstepper on initialization.
     private count: number = 100;
     private delay: number = 50;
+    private dataType: string = Constants.RANDOM;
 
     // to store whether we need to reset the board/actions.
     private reset: boolean = true;
@@ -52,6 +53,7 @@ class App {
             Constants.supported_sorts,
             this.count,
             this.delay,
+            this.dataType,
             this.onReload(),
         )
 
@@ -76,6 +78,8 @@ class App {
                     height: this.canvas.height,
                     ctx: this.ctx,
                     count: this.count,
+                    data_type: this.dataType,
+
                     swapCallback: this.swapCallback(),
                     compareCallback: this.compareCallback(),
                     accessCallback: this.accessCallback(),
@@ -106,15 +110,18 @@ class App {
                 let oldsort = this.sort_type;
                 let oldcount = this.count;
                 let olddelay = this.delay;
+                let olddatatype = this.dataType;
 
                 this.sort_type = controls.dropdownChoice;
                 this.count = controls.count;
                 this.delay = controls.delay;
+                this.dataType = controls.dataType;
 
-                if (oldsort !== this.sort_type|| oldcount !== this.count) {
+                this.reset = false;
+                if (oldsort !== this.sort_type ||
+                    oldcount !== this.count ||
+                    olddatatype !== this.dataType) {
                     this.reset = true;
-                } else {
-                    this.reset = false;
                 }
 
                 this.setup();

@@ -1,0 +1,8 @@
+1.1.0
+ * comb sort, shell sort
+ * data type changes
+ * display inefficient sort warning more usefully
+ * code cleanups
+
+1.0.0
+ * initial release

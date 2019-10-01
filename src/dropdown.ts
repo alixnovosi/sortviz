@@ -1,22 +1,31 @@
+import { Util } from "./util";
+
 export class DropDown {
-    public element: HTMLSelectElement;
+    public element: HTMLElement;
 
     constructor(
-        base: HTMLElement,
+        titleLabel: string,
         options: string[],
         onUpdate: (event: Event) => void,
     ) {
-        this.element = document.createElement("select");
+        this.element = document.createElement("div");
+        this.element.className = "dropdownContainer";
+
+        let labelElem = document.createElement("h4");
+        labelElem.innerHTML = titleLabel;
+        this.element.appendChild(labelElem);
+
+        let select = document.createElement("select");
 
         for (let option of options) {
             let option_element = document.createElement("option");
             option_element.value = option;
-            option_element.text = option;
-            this.element.appendChild(option_element);
+            option_element.text = Util.textFilter(option);
+            select.appendChild(option_element);
         }
 
-        this.element.addEventListener("change", onUpdate);
+        this.element.appendChild(select);
 
-        base.appendChild(this.element);
+        this.element.addEventListener("change", onUpdate);
     }
 }

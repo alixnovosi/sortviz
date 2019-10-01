@@ -6,8 +6,13 @@ export class SortData {
     public height: number;
     public width: number;
 
+    // count of items.
     public count: number;
 
+    // whether data is random, or sorted in one of several ways.
+    public data_type: string;
+
+    // callbacks to update stats in controls box.
     public swapCallback: () => void;
     public compareCallback: () => void;
     public accessCallback: () => void;
@@ -40,23 +45,57 @@ export class SortStepper {
         this.data = data;
         let bar_spacing = this.data.height / (this.data.count);
 
-        let nums = [];
+        // generate data.
+        let raw_data: number[] = [];
         let val = bar_spacing;
         for (let i = 0; i < this.data.count; i++) {
-            nums.push(val);
+            raw_data.push(val);
             val += bar_spacing;
         }
 
+        // arrange for whatever data type we're doing.
+        let nums: number[] = [];
+        if (this.data.data_type === Constants.SORTED) {
+            nums = raw_data;
+
+        } else if (this.data.data_type === Constants.NEARLY_SORTED) {
+            nums = raw_data;
+            // call 90% sorted nearly sorted.
+            let brokenum = Math.floor(nums.length * 0.10);
+            for (let i = 0; i < brokenum; i++) {
+                let j = Math.floor(Math.random() * nums.length);
+                let k = Math.floor(Math.random() * nums.length);
+
+                [nums[j], nums[k]] = [nums[k], nums[j]];
+            }
+
+        } else if (this.data.data_type === Constants.RANDOM) {
+            for (let i = 0; i < this.data.count; i++) {
+                let index = Math.floor(Math.random() * raw_data.length);
+                let value = raw_data.splice(index, 1)[0];
+                nums.push(value);
+            }
+
+        } else if (this.data.data_type === Constants.REVERSED) {
+            nums = raw_data;
+            for (let i=0; i < Math.floor(raw_data.length/2); i++) {
+                let rev_i = nums.length-1-i;
+                [nums[i], nums[rev_i]] = [nums[rev_i], nums[i]];
+            }
+
+        // default.
+        } else {
+            nums = raw_data;
+        }
+
         for (let i = 0; i < this.data.count; i++) {
-            let index: number = Math.floor(Math.random() * nums.length);
-            let value: number = nums.splice(index, 1)[0];
             this.items.push(
-                new Bar(value, this.fill_color),
+                new Bar(nums[i], this.fill_color),
             );
 
             // store a copy of every item, so we can play actions back later.
             this.untouched_items.push(
-                new Bar(value, this.fill_color),
+                new Bar(nums[i], this.fill_color),
             );
         }
     }
