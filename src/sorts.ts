@@ -122,14 +122,31 @@ export class Sort {
         this.alg(0, this.stepper.data.count-1);
     }
 
-    // randomly pick pivot between start and end (both inclusive);
-    // TODO try out other pivot selection methods.
-    private pick_pivot(start: number, end: number) {
-        return Math.floor(Math.random() * (end-start+1) + start);
+    // randomly pick pivot between start and end (both inclusive).
+    private rand_pivot(start: number, end: number): void {
+        let mid = Math.floor(Math.random() * (end-start+1) + start);
+        this.stepper.swap(mid, end);
+    }
+
+    // median-of-three pivot.
+    private mo3_pivot(start: number, end: number): void {
+        let mid = start + Math.floor((end-start)/2);
+        if (this.stepper.compare(mid, start) < 0) {
+            this.stepper.swap(start, mid);
+        }
+        if (this.stepper.compare(end, start) < 0) {
+            this.stepper.swap(start, end);
+        }
+        if (this.stepper.compare(mid, end) < 0) {
+            this.stepper.swap(mid, end);
+        }
     }
 
     // helpers!
-    private partition(start: number, end: number) {
+    // lomuto partition with random pivot choice.
+    private partition_lomuto(start: number, end: number): number {
+        this.mo3_pivot(start, end);
+
         let follower = start;
         let leader = start;
 
@@ -147,18 +164,35 @@ export class Sort {
         return follower;
     };
 
+    private partition_hoare(start: number, end: number) {
+        let pivot = start;
+        let i = start-1;
+        let j = end+1;
+        while (true) {
+            do {
+                i++;
+            } while (this.stepper.compare(i, pivot) < 0);
+
+            do {
+                j--;
+            } while (this.stepper.compare(j, pivot) > 0);
+
+            if (i >= j) {
+                return j;
+            }
+
+            this.stepper.swap(i, j);
+        }
+    }
+
     // sort methods!!!
     private quicksort(start: number, end: number): void {
-        if (start >= end) {
-            return;
+        //console.log(`running quicksort on ${start} ${end}`);
+        if (start < end) {
+            let p = this.partition_hoare(start, end);
+            this.quicksort(start, p);
+            this.quicksort(p+1, end);
         }
-
-        let rand_pivot_index = this.pick_pivot(start, end);
-        this.stepper.swap(rand_pivot_index, end);
-
-        let pivot = this.partition(start, end);
-        this.quicksort(start, pivot-1);
-        this.quicksort(pivot+1, end);
     }
 
     private heapsort(start: number, end: number): void {
@@ -364,18 +398,13 @@ export class Sort {
                 this.heapsort(start, end);
             } else {
 
-                // pick random pivot and place at end of partition,
-                // which partition function expects/requires.
-                let rand_pivot_index = this.pick_pivot(start, end);
-                this.stepper.swap(rand_pivot_index, end);
-
-                let p = this.partition(start, end);
+                let p = this.partition_lomuto(start, end);
                 internal(start, p-1, maxdepth-1);
                 internal(p+1, end, maxdepth-1);
             }
         };
 
-        let maxdepth = Math.floor(Math.log2(end-start+1))*2;
+        let maxdepth = Math.floor(Math.log(end-start+1))*2;
         internal(start, end, maxdepth);
     }
 }
