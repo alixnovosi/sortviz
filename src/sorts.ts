@@ -112,12 +112,20 @@ export class Sort {
             this.alg = this.shellsort;
         } else if (this.sort_type === Constants.GNOME_SORT) {
             this.alg = this.gnomesort;
+        } else if (this.sort_type === Constants.INTROSORT) {
+            this.alg = this.introsort;
         }
 
         // these sorts are all designed so they optionally can work on subsections
         // of the array.
         // so, make sure they sort the whole thing.
         this.alg(0, this.stepper.data.count-1);
+    }
+
+    // randomly pick pivot between start and end (both inclusive);
+    // TODO try out other pivot selection methods.
+    private pick_pivot(start: number, end: number) {
+        return Math.floor(Math.random() * (end-start+1) + start);
     }
 
     // helpers!
@@ -145,8 +153,7 @@ export class Sort {
             return;
         }
 
-        let rand_pivot_index = Math.floor((Math.random() * (end-start+1)) + start);
-
+        let rand_pivot_index = this.pick_pivot(start, end);
         this.stepper.swap(rand_pivot_index, end);
 
         let pivot = this.partition(start, end);
@@ -332,9 +339,8 @@ export class Sort {
     }
 
     // https://en.wikipedia.org/wiki/Gnome_sort
-    // the computational complexity is amazing.
+    // similar to insertion sort, but not quite the same.
     private gnomesort(start: number, end: number) {
-        console.log("oy");
         let pos = start;
         while (pos <= end) {
             if (pos === start || this.stepper.compare(pos, pos-1) >= 0) {
@@ -344,5 +350,32 @@ export class Sort {
                 pos -= 1;
             }
         }
+    }
+
+    // https://en.wikipedia.org/wiki/Introsort
+    // an efficient combo sort.
+    private introsort(start: number, end: number) {
+        let internal: (start: number, end: number, maxdepth: number) => void =
+            (start: number, end: number, maxdepth: number) => {
+            let n = end-start+1;
+            if (n <= 1) {
+                return; // base case
+            } else if (maxdepth === 0) {
+                this.heapsort(start, end);
+            } else {
+
+                // pick random pivot and place at end of partition,
+                // which partition function expects/requires.
+                let rand_pivot_index = this.pick_pivot(start, end);
+                this.stepper.swap(rand_pivot_index, end);
+
+                let p = this.partition(start, end);
+                internal(start, p-1, maxdepth-1);
+                internal(p+1, end, maxdepth-1);
+            }
+        };
+
+        let maxdepth = Math.floor(Math.log2(end-start+1))*2;
+        internal(start, end, maxdepth);
     }
 }

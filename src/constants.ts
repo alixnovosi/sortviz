@@ -12,6 +12,9 @@ export class Constants {
     public static readonly SHELLSORT = "SHELLSORT";
     public static readonly GNOME_SORT = "GNOME_SORT";
 
+    // fun combo library sorts.
+    public static readonly INTROSORT = "INTROSORT";
+
     public static supported_sorts: string[] = [
         Constants.QUICKSORT,
         Constants.HEAPSORT,
@@ -23,6 +26,7 @@ export class Constants {
         Constants.COCKTAIL_SHAKER_SORT,
         Constants.GNOME_SORT,
         Constants.STOOGESORT,
+        Constants.INTROSORT,
     ];
 
     // sorts we should give a warning on that they're inefficient.
