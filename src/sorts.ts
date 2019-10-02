@@ -165,17 +165,20 @@ export class Sort {
     };
 
     private partition_hoare(start: number, end: number) {
-        let pivot = start;
+        // hoare partition needs middle element, but needs it at the START.
+        let pivot = start + Math.floor((end-start)/2);
+        this.stepper.swap(pivot, start);
+
         let i = start-1;
         let j = end+1;
         while (true) {
             do {
                 i++;
-            } while (this.stepper.compare(i, pivot) < 0);
+            } while (this.stepper.compare(i, start) < 0);
 
             do {
                 j--;
-            } while (this.stepper.compare(j, pivot) > 0);
+            } while (this.stepper.compare(j, start) > 0);
 
             if (i >= j) {
                 return j;
@@ -186,12 +189,18 @@ export class Sort {
     }
 
     // sort methods!!!
-    private quicksort(start: number, end: number): void {
-        //console.log(`running quicksort on ${start} ${end}`);
+    private quicksort(start: number, end: number, hoare: boolean=true): void {
         if (start < end) {
-            let p = this.partition_hoare(start, end);
-            this.quicksort(start, p);
-            this.quicksort(p+1, end);
+            if (hoare) {
+                let p = this.partition_hoare(start, end);
+                this.quicksort(start, p, hoare);
+                this.quicksort(p+1, end, hoare);
+
+            } else {
+                let p = this.partition_lomuto(start, end);
+                this.quicksort(start, p-1, hoare);
+                this.quicksort(p+1, end, hoare);
+            }
         }
     }
 
@@ -388,23 +397,32 @@ export class Sort {
 
     // https://en.wikipedia.org/wiki/Introsort
     // an efficient combo sort.
-    private introsort(start: number, end: number) {
-        let internal: (start: number, end: number, maxdepth: number) => void =
-            (start: number, end: number, maxdepth: number) => {
+    private introsort(start: number, end: number, hoare: boolean=true) {
+        let internal: (start: number, end: number, maxdepth: number, hoare: boolean) => void =
+            (start: number, end: number, maxdepth: number, hoare: boolean) => {
+
             let n = end-start+1;
             if (n <= 1) {
                 return; // base case
+
             } else if (maxdepth === 0) {
                 this.heapsort(start, end);
-            } else {
 
-                let p = this.partition_lomuto(start, end);
-                internal(start, p-1, maxdepth-1);
-                internal(p+1, end, maxdepth-1);
+            } else {
+                if (hoare) {
+                    let p = this.partition_hoare(start, end);
+                    internal(start, p, maxdepth-1, hoare);
+                    internal(p+1, end, maxdepth-1, hoare);
+
+                } else {
+                    let p = this.partition_lomuto(start, end);
+                    internal(start, p-1, maxdepth-1, hoare);
+                    internal(p+1, end, maxdepth-1,hoare);
+                }
             }
         };
 
         let maxdepth = Math.floor(Math.log(end-start+1))*2;
-        internal(start, end, maxdepth);
+        internal(start, end, maxdepth, hoare);
     }
 }
