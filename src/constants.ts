@@ -12,9 +12,11 @@ export class Constants {
     public static readonly SHELLSORT = "SHELLSORT";
     public static readonly GNOME_SORT = "GNOME_SORT";
     public static readonly CYCLE_SORT = "CYCLE_SORT";
+    public static readonly ODD_EVEN_SORT = "ODD_EVEN_SORT";
 
     // fun combo library sorts.
     public static readonly INTROSORT = "INTROSORT";
+    public static readonly BLOCK_SORT = "BLOCK_SORT";
 
     public static supported_sorts: string[] = [
         Constants.QUICKSORT,
@@ -29,6 +31,8 @@ export class Constants {
         Constants.STOOGESORT,
         Constants.INTROSORT,
         Constants.CYCLE_SORT,
+        Constants.BLOCK_SORT,
+        Constants.ODD_EVEN_SORT,
     ];
 
     // sorts we should give a warning on that they're inefficient.
@@ -39,6 +43,7 @@ export class Constants {
         Constants.BUBBLE_SORT,
         Constants.COCKTAIL_SHAKER_SORT,
         Constants.GNOME_SORT,
+        Constants.ODD_EVEN_SORT,
     ];
 
     // supported data types.

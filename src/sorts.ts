@@ -93,7 +93,7 @@ export class Sort {
 
         // TODO find a way to do this automatically off the supported sorts list.
         if (this.sort_type === Constants.QUICKSORT) {
-            this.alg = this.quicksort
+            this.alg = this.quicksort;
         } else if (this.sort_type === Constants.HEAPSORT) {
             this.alg = this.heapsort;
         } else if (this.sort_type === Constants.STOOGESORT) {
@@ -116,6 +116,10 @@ export class Sort {
             this.alg = this.introsort;
         } else if (this.sort_type === Constants.CYCLE_SORT) {
             this.alg = this.cycle_sort;
+        } else if (this.sort_type === Constants.BLOCK_SORT) {
+            this.alg = this.block_sort;
+        } else if (this.sort_type === Constants.ODD_EVEN_SORT) {
+            this.alg = this.odd_even_sort;
         }
 
         // these sorts are all designed so they optionally can work on subsections
@@ -189,6 +193,69 @@ export class Sort {
             this.stepper.swap(i, j);
         }
     }
+
+    // reverse array in-place
+    private reverse(start, end): void {
+        let i = start;
+        let j = end;
+        let mid = Math.floor((start+end)/2);
+        while (i <= mid && j >= mid) {
+            this.stepper.swap(i, j)
+            i++;
+            j--;
+        }
+    }
+
+    // rotate elements in array left or right by some number of spaces.
+    private rotate(start, end, amount) {
+        let a = (end+1) - amount;
+        this.reverse(start, start+amount)
+        this.reverse(start+amount, end);
+        this.reverse(start, end);
+    }
+
+    // floor value to next power of two.
+    private floor_power_of_two(x: number): number {
+        x = x | (x >> 1);
+        x = x | (x >> 2);
+        x = x | (x >> 4);
+        x = x | (x >> 8);
+        x = x | (x >> 16);
+        x = x | (x >> 32);
+        return x - (x >> 1);
+    }
+
+    // in-place merge of two lists.
+    private merge(startA: number, endA: number, startB: number, endB: number): void {
+        // invariant: A is in sorted order and B is in sorted order.
+        // so if we break that, we need to fix it.
+
+        // consider each element of A.
+        for (let i = startA; i < endA+1; i++) {
+
+            // compare to first element of B.
+            if (this.stepper.compare(i, startB) > 0) {
+                this.stepper.swap(i, startB);
+                let first = startB;
+
+                // move this new B[0] into its correct position.
+                let k: number;
+                for (k = startB+1; k < endB+1  && this.stepper.access(k) < first; k++) {
+                    this.stepper.assign(k-1, this.stepper.access(k));
+                }
+
+                this.stepper.assign(k-1, first);
+            }
+        }
+    }
+
+    // // linear search for an element.
+    // private lirch(start, end, value) {
+    //     for (let i = start; i < end+1; i++) {
+    //
+    //     }
+    //
+    // }
 
     // sort methods!!!
     private quicksort(start: number, end: number, hoare: boolean=true): void {
@@ -475,6 +542,58 @@ export class Sort {
                 let temp = this.stepper.access(pos);
                 this.stepper.assign(pos, item);
                 item = temp;
+            }
+        }
+    }
+
+    private block_sort(start: number, end: number): void {
+        // this is just the outer loop, lol.
+        let length = end-start+1;
+        let power_of_two = this.floor_power_of_two(length);
+        let scale = length/power_of_two; // 1.0 <= scale < 2.0
+
+        // insertion sort 16-31 items at a time.
+        for (let merge = 0; merge < power_of_two; merge+=16) {
+            let start = Math.floor(merge*scale);
+            let end = start + Math.floor(16*scale);
+            this.insertion_sort(start, end-1);
+        }
+
+        for (let length = 16; length < power_of_two; length += length) {
+            for (let merge = 0; merge < power_of_two; merge += length * 2) {
+                let start = Math.floor(merge*scale);
+                let mid = Math.floor((merge + length)*scale);
+                let end = Math.floor((merge + length*2)*scale);
+
+                if (this.stepper.compare(end-1, start) < 0) {
+                    // the two ranges are in reverse order,
+                    // so a rotation is enough to merge them.
+                    this.rotate(start, end-1, mid-start);
+                } else if (this.stepper.compare(mid-1, mid) > 0) {
+                    this.merge(start, mid-1, mid, end-1);
+                }
+                // else the ranges are already correctly ordered.
+            }
+        }
+    }
+
+    //https://en.wikipedia.org/wiki/Odd%E2%80%93even_sort
+    private odd_even_sort(start: number, end: number): void {
+        let sorted = false;
+        while (!sorted) {
+            sorted = true;
+            for (let i = start+1; i < end; i += 2) {
+                if (this.stepper.compare(i, i+1) > 0) {
+                    this.stepper.swap(i, i+1);
+                    sorted = false;
+                }
+            }
+
+            for (let i = start; i < end; i += 2) {
+                if (this.stepper.compare(i, i+1) > 0) {
+                    this.stepper.swap(i, i+1);
+                    sorted = false;
+                }
             }
         }
     }

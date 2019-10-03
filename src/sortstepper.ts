@@ -220,6 +220,51 @@ export class SortStepper {
         [this.items[first], this.items[second]] = [this.items[second], this.items[first]];
     }
 
+    // swap two blocks of elements with a color change.
+    public swap_block(first_list: number[], second_list: number[]): void {
+        if (first_list.length !== second_list.length) {
+            return;
+        }
+        let actual_swap = () => {
+            for (let i = 0; i < first_list.length; i++) {
+                let first = first_list[i];
+                let second = second_list[i];
+                this.items[second].color = Constants.NORMAL_COLOR;
+                this.items[first].color = Constants.NORMAL_COLOR;
+                this.data.swapCallback();
+            }
+        };
+
+        // change colors, perform swap, change colors back.
+        this.lambda_q.push(
+            () => {
+                for (let i = 0; i < first_list.length; i++) {
+                    let first = first_list[i];
+                    let second = second_list[i];
+                    this.items[first].color = Constants.SWAP_COLOR;
+                    this.items[second].color = Constants.SWAP_COLOR;
+                }
+            }
+        );
+        this.lambda_q.push(
+            () => {
+                for (let i = 0; i < first_list.length; i++) {
+                    let first = first_list[i];
+                    let second = second_list[i];
+                    [this.items[first], this.items[second]] = [
+                        this.items[second],
+                        this.items[first]
+                    ];
+                }
+            }
+        );
+        this.lambda_q.push(
+            actual_swap
+        );
+
+        actual_swap();
+    }
+
     public reset_items() {
         this.items = [];
         for (let item of this.untouched_items) {
