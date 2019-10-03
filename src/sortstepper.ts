@@ -182,6 +182,8 @@ export class SortStepper {
                 this.data.accessCallback();
             }
         );
+
+        this.items[index].value = value;
     }
 
     // swap two elements with a color change.

@@ -11,6 +11,7 @@ export class Constants {
     public static readonly COMB_SORT = "COMB_SORT";
     public static readonly SHELLSORT = "SHELLSORT";
     public static readonly GNOME_SORT = "GNOME_SORT";
+    public static readonly CYCLE_SORT = "CYCLE_SORT";
 
     // fun combo library sorts.
     public static readonly INTROSORT = "INTROSORT";
@@ -27,6 +28,7 @@ export class Constants {
         Constants.GNOME_SORT,
         Constants.STOOGESORT,
         Constants.INTROSORT,
+        Constants.CYCLE_SORT,
     ];
 
     // sorts we should give a warning on that they're inefficient.

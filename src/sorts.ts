@@ -114,6 +114,8 @@ export class Sort {
             this.alg = this.gnomesort;
         } else if (this.sort_type === Constants.INTROSORT) {
             this.alg = this.introsort;
+        } else if (this.sort_type === Constants.CYCLE_SORT) {
+            this.alg = this.cycle_sort;
         }
 
         // these sorts are all designed so they optionally can work on subsections
@@ -424,5 +426,56 @@ export class Sort {
 
         let maxdepth = Math.floor(Math.log(end-start+1))*2;
         internal(start, end, maxdepth, hoare);
+    }
+
+    // https://en.wikipedia.org/wiki/Cycle_sort
+    private cycle_sort(start: number, end: number) {
+
+        // loop through array to find cycles to rotate.
+        for (let cycle_start = start; cycle_start < end; cycle_start++) {
+            let item = this.stepper.access(cycle_start);
+
+            // find where to put the item.
+            let pos = cycle_start;
+            for (let i = cycle_start+1; i < end+1; i++) {
+                if (this.stepper.access(i) < item) {
+                    pos++;
+                }
+            }
+
+            // if the item is already there, this is not a cycle.
+            if (pos == cycle_start) {
+                continue;
+            }
+
+            // otherwise, put the item right there, or after any duplicates.
+            // if you don't do that last condition, you get infinite loops.
+            while (item == this.stepper.access(pos)) {
+                pos++;
+            }
+            let temp = this.stepper.access(pos);
+            this.stepper.assign(pos, item);
+            item = temp;
+
+            // rotate the rest of the cycle.
+            while (pos !== cycle_start) {
+                // find where to put the item.
+                pos = cycle_start;
+                for (let i = cycle_start+1; i < end+1; i++) {
+                    if (this.stepper.access(i) < item) {
+                        pos++;
+                    }
+                }
+
+
+                // put the item right there or after any duplicates, as before.
+                while (item == this.stepper.access(pos)) {
+                    pos++;
+                }
+                let temp = this.stepper.access(pos);
+                this.stepper.assign(pos, item);
+                item = temp;
+            }
+        }
     }
 }
