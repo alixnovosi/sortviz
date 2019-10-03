@@ -96,6 +96,8 @@ export class Sort {
             this.alg = this.quicksort;
         } else if (this.sort_type === Constants.HEAPSORT) {
             this.alg = this.heapsort;
+        } else if (this.sort_type === Constants.MERGE_SORT) {
+            this.alg = this.merge_sort;
         } else if (this.sort_type === Constants.STOOGESORT) {
             this.alg = this.stoogesort;
         } else if (this.sort_type === Constants.SELECTION_SORT) {
@@ -226,7 +228,8 @@ export class Sort {
     }
 
     // in-place merge of two lists.
-    private merge(startA: number, endA: number, startB: number, endB: number): void {
+    // slow...
+    private ip_merge(startA: number, endA: number, startB: number, endB: number): void {
         // invariant: A is in sorted order and B is in sorted order.
         // so if we break that, we need to fix it.
 
@@ -234,18 +237,50 @@ export class Sort {
         for (let i = startA; i < endA+1; i++) {
 
             // compare to first element of B.
-            if (this.stepper.compare(i, startB) > 0) {
+            if (this.stepper.compare(i, startB) >= 0) {
                 this.stepper.swap(i, startB);
-                let first = startB;
+                let first = this.stepper.access(startB);
 
                 // move this new B[0] into its correct position.
                 let k: number;
-                for (k = startB+1; k < endB+1  && this.stepper.access(k) < first; k++) {
+                for (k = startB+1; k < endB+1 && this.stepper.access(k) < first; k++) {
                     this.stepper.assign(k-1, this.stepper.access(k));
                 }
 
                 this.stepper.assign(k-1, first);
             }
+        }
+    }
+
+    // not-in-place merge.
+    // cheating...
+    private merge(startA: number, endA: number, startB: number, endB: number): void {
+        let buffer: number[] = [];
+
+        let i = startA;
+        let j = startB;
+        while (i < endA+1 && j < endB+1) {
+            if (this.stepper.compare(i, j) < 0) {
+                buffer.push(this.stepper.access(i));
+                i++;
+            } else {
+                buffer.push(this.stepper.access(j));
+                j++;
+            }
+        }
+
+        while (i < endA+1) {
+            buffer.push(this.stepper.access(i));
+            i++;
+        }
+
+        while (j < endB+1) {
+            buffer.push(this.stepper.access(j));
+            j++;
+        }
+
+        for (let i = 0; i < buffer.length; i++) {
+            this.stepper.assign(i+startA, buffer[i]);
         }
     }
 
@@ -495,6 +530,7 @@ export class Sort {
         internal(start, end, maxdepth, hoare);
     }
 
+    // TODO I think there's a bug. seems to loop too long on sorted input.
     // https://en.wikipedia.org/wiki/Cycle_sort
     private cycle_sort(start: number, end: number) {
 
@@ -596,5 +632,29 @@ export class Sort {
                 }
             }
         }
+    }
+
+    private merge_sort(start: number, end: number): void {
+        let count = end-start+1;
+        if (count < 2) {
+            return;
+        }
+
+        if (count == 2) {
+            if (this.stepper.compare(start, end) > 0) {
+                this.stepper.swap(start, end);
+            }
+
+            return;
+        }
+
+        let half = Math.floor((end+start)/2);
+
+        console.log(`start ${start} mid ${half} end ${end}`);
+
+        this.merge_sort(start, half);
+        this.merge_sort(half+1, end);
+
+        this.merge(start, half, half+1, end);
     }
 }
