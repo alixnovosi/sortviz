@@ -1,7 +1,7 @@
 {
-    "name": "tree_web",
-    "version": "1.2.0",
-    "description": "tree visualizer",
+    "name": "sortviz",
+    "version": "1.3.0",
+    "description": "sort visualizer",
     "main": "index.ts",
     "dependencies": {},
     "devDependencies": {
@@ -42,7 +42,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/alixnovosi/tree_web"
+        "url": "https://github.com/alixnovosi/sortviz"
     },
     "author": "Andrew Michaud",
     "license": "bsd-3-clause"
