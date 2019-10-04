@@ -188,11 +188,6 @@ export class SortStepper {
 
     // swap two elements with a color change.
     public swap(first: number, second: number): void {
-        if (first < 0 || first >= this.items.length ||
-                second < 0 || second >= this.items.length) {
-            return;
-        }
-
         if (first == second) {
             return;
         }

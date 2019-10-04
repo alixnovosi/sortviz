@@ -122,6 +122,8 @@ export class Sort {
             this.alg = this.block_sort;
         } else if (this.sort_type === Constants.ODD_EVEN_SORT) {
             this.alg = this.odd_even_sort;
+        } else if (this.sort_type === Constants.LSD_RADIX_SORT) {
+            this.alg = this.lsd_radix_sort;
         }
 
         // these sorts are all designed so they optionally can work on subsections
@@ -138,6 +140,11 @@ export class Sort {
 
     // median-of-three pivot.
     private mo3_pivot(start: number, end: number): void {
+        // shortcut if there are three elements.
+        // the swaps will take too long.
+        if (end-start == 2) {
+            return;
+        }
         let mid = start + Math.floor((end-start)/2);
         if (this.stepper.compare(mid, start) < 0) {
             this.stepper.swap(start, mid);
@@ -174,8 +181,8 @@ export class Sort {
 
     private partition_hoare(start: number, end: number) {
         // hoare partition needs middle element, but needs it at the START.
-        let pivot = start + Math.floor((end-start)/2);
-        this.stepper.swap(pivot, start);
+        this.mo3_pivot(start, end);
+        this.stepper.swap(end, start);
 
         let i = start-1;
         let j = end+1;
@@ -284,16 +291,20 @@ export class Sort {
         }
     }
 
-    // // linear search for an element.
-    // private lirch(start, end, value) {
-    //     for (let i = start; i < end+1; i++) {
-    //
-    //     }
-    //
-    // }
-
     // sort methods!!!
     private quicksort(start: number, end: number, hoare: boolean=true): void {
+        if (start >= end) {
+            return;
+        }
+
+        if (end-start == 1) {
+            if (this.stepper.compare(start, end) > 0) {
+                this.stepper.swap(start, end);
+                return;
+            }
+
+        }
+
         if (start < end) {
             if (hoare) {
                 let p = this.partition_hoare(start, end);
@@ -650,11 +661,58 @@ export class Sort {
 
         let half = Math.floor((end+start)/2);
 
-        console.log(`start ${start} mid ${half} end ${end}`);
-
         this.merge_sort(start, half);
         this.merge_sort(half+1, end);
 
         this.merge(start, half, half+1, end);
+    }
+
+    private lsd_radix_sort(start: number, end: number): void {
+        // we need to track when we've gone through a read of the array
+        // and found no items that have that index of digit.
+        // that's how we know we're done.
+        let found_item = true;
+
+        let index = 0;
+        while (found_item) {
+            let buckets: number[][] = [...Array(10)].map(() => []);
+            let ten_power = Math.pow(10, index);
+            found_item = false;
+
+            for (let i = start; i < end+1; i++) {
+                let elem = this.stepper.access(i);
+
+                // we found an item that has this index,
+                // (i.e., if we're doing the 10s, we found something at least as large as 10),
+                // which means we need to finish this iteration and maybe more.
+                let digit: number;
+                if (elem >= ten_power) {
+                    found_item = true;
+
+                    let mask = 10*Math.floor(elem/(Math.pow(10, index+1)));
+                    digit = Math.floor(elem/Math.pow(10, index)) - mask;
+
+                // we fill 0 in for items less than the current index.
+                } else {
+                    digit = 0;
+                }
+
+                buckets[digit].push(elem);
+            }
+
+            // write buckets back to array,
+            // only if we found at least one element that didn't need an index filled in.
+            if (found_item) {
+                let bucket_index = start;
+                for (let bucket of buckets) {
+                    for (let elem of bucket) {
+                        this.stepper.assign(bucket_index, elem);
+                        bucket_index++;
+                    }
+                }
+            }
+
+            index++;
+        }
     }
 }

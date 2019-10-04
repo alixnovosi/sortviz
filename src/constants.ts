@@ -1,10 +1,15 @@
 // TODO store links somewhere and show that.
 export class Constants {
     // supported sorts.
+    // good sorts
     public static readonly QUICKSORT = "QUICKSORT";
     public static readonly HEAPSORT = "HEAPSORT";
     public static readonly MERGE_SORT = "MERGE_SORT";
 
+    // weird sorts.
+    public static readonly LSD_RADIX_SORT = "LSD_RADIX_SORT";
+
+    // various kinds of bad or bad-ish sorts.
     public static readonly SELECTION_SORT = "SELECTION_SORT";
     public static readonly INSERTION_SORT = "INSERTION_SORT";
 
@@ -29,6 +34,7 @@ export class Constants {
         Constants.INTROSORT,
         Constants.INSERTION_SORT,
         Constants.SELECTION_SORT,
+        Constants.LSD_RADIX_SORT,
         Constants.BUBBLE_SORT,
         Constants.COCKTAIL_SHAKER_SORT,
         Constants.COMB_SORT,

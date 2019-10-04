@@ -91,7 +91,7 @@ export class Controls {
         // delay slider bar
         this.base.appendChild(new Slider(
             "render delay (ms)",
-            1,
+            0.5,
             500,
             this.delay,
             this.onDelaySliderUpdate(),
