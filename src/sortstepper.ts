@@ -166,16 +166,16 @@ export class SortStepper {
     // set element at index.
     // only shellsort uses this so far, so we duplicate access color.
     public assign(index: number, value: number): void {
+        let actual_change = () => {
+            this.items[index].value = value;
+        };
+
         this.lambda_q.push(
             () => {
                 this.items[index].color = Constants.ACCESS_COLOR;
             }
         );
-        this.lambda_q.push(
-            () => {
-                this.items[index].value = value;
-            }
-        );
+        this.lambda_q.push(actual_change);
         this.lambda_q.push(
             () => {
                 this.items[index].color = Constants.NORMAL_COLOR;
@@ -183,13 +183,55 @@ export class SortStepper {
             }
         );
 
-        this.items[index].value = value;
+        actual_change();
+    }
+
+    // assign multiple elements in one pass.
+    public multi_assign(indices: number[], values: number[]) {
+        // TODO more of these should throw errors.
+        if (indices.length !== values.length) {
+            return;
+        }
+
+        let actual_change = () => {
+            for (let i = 0; i < indices.length; i++) {
+                let index = indices[i];
+                let value = values[i];
+                this.items[index].value = value;
+            }
+        };
+
+        this.lambda_q.push(
+            () => {
+                for (let i = 0; i < indices.length; i++) {
+                    let index = indices[i];
+                    this.items[index].color = Constants.ACCESS_COLOR;
+                }
+            }
+        );
+        this.lambda_q.push(actual_change);
+        this.lambda_q.push(
+            () => {
+                for (let i = 0; i < indices.length; i++) {
+                    let index = indices[i];
+                    this.items[index].color = Constants.NORMAL_COLOR;
+                }
+                this.data.accessCallback();
+            }
+        );
+
+        actual_change();
+
     }
 
     // swap two elements with a color change.
     public swap(first: number, second: number): void {
         if (first == second) {
             return;
+        }
+
+        let actual_swap = () => {
+            [this.items[first], this.items[second]] = [this.items[second], this.items[first]];
         }
 
         // change colors, perform swap, change colors back.
@@ -200,9 +242,7 @@ export class SortStepper {
             }
         );
         this.lambda_q.push(
-            () => {
-                [this.items[first], this.items[second]] = [this.items[second], this.items[first]];
-            }
+            actual_swap,
         );
         this.lambda_q.push(
             () => {
@@ -212,7 +252,7 @@ export class SortStepper {
             }
         );
 
-        [this.items[first], this.items[second]] = [this.items[second], this.items[first]];
+        actual_swap();
     }
 
     // swap two blocks of elements with a color change.
@@ -220,13 +260,15 @@ export class SortStepper {
         if (first_list.length !== second_list.length) {
             return;
         }
-        let actual_swap = () => {
+
+        let actual_change = () => {
             for (let i = 0; i < first_list.length; i++) {
                 let first = first_list[i];
                 let second = second_list[i];
-                this.items[second].color = Constants.NORMAL_COLOR;
-                this.items[first].color = Constants.NORMAL_COLOR;
-                this.data.swapCallback();
+                [this.items[first], this.items[second]] = [
+                    this.items[second],
+                    this.items[first]
+                ];
             }
         };
 
@@ -242,22 +284,21 @@ export class SortStepper {
             }
         );
         this.lambda_q.push(
+            actual_change
+        );
+        this.lambda_q.push(
             () => {
                 for (let i = 0; i < first_list.length; i++) {
                     let first = first_list[i];
                     let second = second_list[i];
-                    [this.items[first], this.items[second]] = [
-                        this.items[second],
-                        this.items[first]
-                    ];
+                    this.items[first].color = Constants.NORMAL_COLOR;
+                    this.items[second].color = Constants.NORMAL_COLOR;
                 }
+                this.data.swapCallback();
             }
         );
-        this.lambda_q.push(
-            actual_swap
-        );
 
-        actual_swap();
+        actual_change();
     }
 
     public reset_items() {

@@ -676,6 +676,9 @@ export class Sort {
         let index = 0;
         while (found_item) {
             let buckets: number[][] = [...Array(10)].map(() => []);
+
+            // track largest bucket size for multi-assign later.
+            let largest_bucket_size = 0;
             let ten_power = Math.pow(10, index);
             found_item = false;
 
@@ -698,17 +701,46 @@ export class Sort {
                 }
 
                 buckets[digit].push(elem);
+
+                if (buckets[digit].length > largest_bucket_size) {
+                    largest_bucket_size = buckets[digit].length;
+                }
             }
 
             // write buckets back to array,
             // only if we found at least one element that didn't need an index filled in.
             if (found_item) {
-                let bucket_index = start;
-                for (let bucket of buckets) {
-                    for (let elem of bucket) {
-                        this.stepper.assign(bucket_index, elem);
-                        bucket_index++;
+
+                // use multi-assign to do it faster while still communicating the assign.
+                for (let j = 0; j < largest_bucket_size; j++) {
+
+                    let indices = [];
+                    let values = [];
+
+                    // iterate through buckets and grab j-th indices and values.
+                    let index_offset = start;
+                    for (let k = 0; k < buckets.length; k++) {
+
+                        let bucket = buckets[k];
+
+                        // this bucket might not have a j-th element.
+                        if (j < bucket.length) {
+                            index_offset += j;
+                            indices.push(index_offset);
+                            values.push(bucket[j]);
+
+                            // next bucket will expect we've pushed the index to
+                            // the start of THEIR bucket, so do that...
+                            index_offset += (bucket.length - j);
+                        } else {
+
+                            // ...in either case.
+                            index_offset += bucket.length;
+                        }
                     }
+
+                    // perform multi-assign.
+                    this.stepper.multi_assign(indices, values);
                 }
             }
 
